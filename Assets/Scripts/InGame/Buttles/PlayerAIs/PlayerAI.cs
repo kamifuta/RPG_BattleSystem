@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UniRx;
 
 namespace InGame.Buttles.PlayerAIs
 {
@@ -15,6 +16,17 @@ namespace InGame.Buttles.PlayerAIs
         private PartyManager partyManager;
         private EnemyManager enemyManager;
         private PlayableCharacterActionManager PlayableCharacterActionManager;
+        private TurnManager turnManager;
+
+        public void ObserveTurn()
+        {
+            turnManager.CurrentTurn
+                .Where(turn => turn == TurnType.ActionSelect)
+                .Subscribe(_ =>
+                {
+                    SelectCharacterAction();
+                });
+        }
 
         public void SelectCharacterAction()
         {
