@@ -9,12 +9,20 @@ namespace InGame.Buttles
 {
     public class PlayableCharacterActionManager
     {
-        private Dictionary<PlayableCharacter, Action<BaseCharacter>> playableCharacterActionDic;
+        private Dictionary<PlayableCharacter, ActionInfo> playableCharacterActionDic = new Dictionary<PlayableCharacter, ActionInfo>();
 
-        public void SetPlayableCharacterAction(PlayableCharacter playableCharacter, Action<BaseCharacter> action)
+        public void SetPlayableCharacterAction(PlayableCharacter playableCharacter, ActionInfo action)
         {
             playableCharacterActionDic.Add(playableCharacter, action);
         }
+
+        public void ClearDic()
+        {
+            playableCharacterActionDic.Clear();
+        }
+
+        public ActionInfo GetCharacterAction(PlayableCharacter playableCharacter)
+            => playableCharacterActionDic[playableCharacter];
     }
 }
 

@@ -1,6 +1,7 @@
-using InGame.Buttles.EnemyAis;
+using InGame.Buttles.EnemyAIs;
 using InGame.Characters;
 using InGame.Characters.Enemies;
+using InGame.Parties;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,19 +11,31 @@ namespace InGame.Buttles
 {
     public class EnemyFactory
     {
-        private readonly EnemyStatusDataTable enemyStatusDataTable;
+        private EnemyStatusDataTable enemyStatusDataTable;
+        private PartyManager partyManager;
 
-        public EnemyFactory()
+        public EnemyFactory(PartyManager partyManager)
         {
-            enemyStatusDataTable = Addressables.LoadAssetAsync<EnemyStatusDataTable>("EnemyStatusDataTable").Result;
+            this.partyManager = partyManager;
+
+            Addressables.LoadAssetAsync<EnemyStatusDataTable>("EnemyStatusDataTable").Completed += hundler =>
+            {
+                enemyStatusDataTable = hundler.Result;
+            };
         }
 
-        public EnemyCharacter CreateEnemy(EnemyType enemyType)
+        public EnemyCharacter CreateEnemyCharacter(EnemyType enemyType)
         {
             var statusData = enemyStatusDataTable.GetStatusData(enemyType);
             var status = new CharacterStatus(statusData);
             var enemy = new EnemyCharacter(status);
             return enemy;
+        }
+
+        public EnemyAI CreateEnemyAI(EnemyCharacter target)
+        {
+            var enemyAI = new EnemyAI(target, partyManager);
+            return enemyAI;
         }
     }
 }

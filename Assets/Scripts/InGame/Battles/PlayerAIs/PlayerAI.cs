@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
+using VContainer;
 
 namespace InGame.Buttles.PlayerAIs
 {
@@ -15,17 +16,18 @@ namespace InGame.Buttles.PlayerAIs
     {
         private PartyManager partyManager;
         private EnemyManager enemyManager;
-        private PlayableCharacterActionManager PlayableCharacterActionManager;
-        private TurnManager turnManager;
+        private PlayableCharacterActionManager playableCharacterActionManager;
 
-        public void ObserveTurn()
+        [Inject]
+        public PlayerAI(PartyManager partyManager)
         {
-            turnManager.CurrentTurn
-                .Where(turn => turn == TurnType.ActionSelect)
-                .Subscribe(_ =>
-                {
-                    SelectCharacterAction();
-                });
+            this.partyManager = partyManager;
+        }
+
+        public void Init(EnemyManager enemyManager, PlayableCharacterActionManager playableCharacterActionManager)
+        {
+            this.enemyManager = enemyManager;
+            this.playableCharacterActionManager = playableCharacterActionManager;
         }
 
         public void SelectCharacterAction()
@@ -33,8 +35,8 @@ namespace InGame.Buttles.PlayerAIs
             foreach(var character in partyManager.partyCharacters)
             {
                 var target = enemyManager.enemies.RandomGet();
-                Action<BaseCharacter> action = _ => character.Attack(target);
-                PlayableCharacterActionManager.SetPlayableCharacterAction(character, action);
+                ActionInfo action = new ActionInfo(character.Attack, target, TargetType.Enemy);
+                playableCharacterActionManager.SetPlayableCharacterAction(character, action);
             }
         }
     }

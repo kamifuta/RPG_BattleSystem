@@ -23,6 +23,7 @@ namespace InGame.Characters
                 throw new ArgumentException("ダメージ値が0未満です");
             }
             currentHP -= damageValue;
+            Debug.Log($"currentHP:{currentHP}");
         }
     }
 }

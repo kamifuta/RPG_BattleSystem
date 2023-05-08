@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45e5f0de7bcb1bb498c9a8241e45a047, type: 3}
   m_Name: SlimeStatusData
   m_EditorClassIdentifier: 
-  maxHP: 0
-  maxMP: 0
-  attackValue: 0
-  defenceValue: 0
-  agility: 0
+  maxHP: 10
+  maxMP: 10
+  attackValue: 3
+  defenceValue: 3
+  agility: 2

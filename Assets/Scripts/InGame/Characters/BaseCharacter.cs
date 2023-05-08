@@ -9,6 +9,7 @@ namespace InGame.Characters
     public class BaseCharacter
     {
         public CharacterStatus characterStatus { get; }
+        public bool IsDead { get; private set; }
 
         private readonly CharacterHealth characterHealth;
 
@@ -21,6 +22,7 @@ namespace InGame.Characters
 
         public void Attack(BaseCharacter target)
         {
+            Debug.Log("Attack");
             target.ApplyDamage(new Damage(characterStatus.AttackValue, DamageType.HP));
         }
 
@@ -28,6 +30,7 @@ namespace InGame.Characters
         {
             var damageValue = damage.AttackValue - characterStatus.DefecnceValue;
             characterHealth.ApplyDamage(damageValue);
+            IsDead = characterHealth.IsDead;
         }
 
         public void Heal(Healing healing)

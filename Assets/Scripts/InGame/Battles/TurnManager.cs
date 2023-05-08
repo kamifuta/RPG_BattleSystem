@@ -7,37 +7,20 @@ using UnityEngine;
 
 namespace InGame.Buttles
 {
-    public enum TurnType
-    {
-        ActionSelect,
-        Buttle,
-    }
-
     public class TurnManager
     {
-        private ReactiveProperty<TurnType> currentTurn;
-        public IObservable<TurnType> CurrentTurn => currentTurn;
+        public int turnCount { get; private set; }
 
-        private int currentTurnCount = 0;
-
-        public void StartPlayerActionSelectTurn()
+        public void StartTurn()
         {
-
+            turnCount = 1;
+            Debug.Log($"ターン{ turnCount}開始");
         }
 
-        public void EndPlayerActionSelectTurn()
+        public void NextTurn()
         {
-
-        }
-
-        public void StartButtleTurn()
-        {
-
-        }
-
-        private void EndButtleTurn()
-        {
-
+            turnCount++;
+            Debug.Log($"ターン{ turnCount}開始");
         }
     }
 }

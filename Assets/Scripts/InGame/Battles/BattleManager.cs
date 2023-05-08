@@ -10,34 +10,26 @@ namespace InGame.Buttles
     public class BattleManager
     {
         private EnemyManager enemyManager;
-        private EmargingEnemiesList EmargingEnemiesList;
-        private EnemyFactory enemyFactory;
+        
+        public void StartButtle(EnemyType encountedEnemyType)
+        {
+            enemyManager.GenerateEnemies(encountedEnemyType, 1);
+        }
 
         public void StartButtle(EnemyType encountedEnemyType, int enemyAmount)
         {
-            GenerateEnemies(encountedEnemyType, enemyAmount);
+            enemyManager.GenerateEnemies(encountedEnemyType, enemyAmount);
         }
 
-        private void GenerateEnemies(EnemyType encountedEnemyType, int enemyAmount)
+        public void StartButtle(EnemyType encountedEnemyType, int minEnemyAmount, int maxEnemyAmount)
         {
-            EnemyCharacter[] enemies = new EnemyCharacter[enemyAmount];
-            var mainEnemyAmount = Random.Range(1, enemyAmount + 1);
+            int enemyAmount = Random.Range(minEnemyAmount, maxEnemyAmount+1);
+            StartButtle(encountedEnemyType, enemyAmount);
+        }
 
-            for(int i = 0; i < mainEnemyAmount; i++)
-            {
-                enemies[i] = enemyFactory.CreateEnemy(encountedEnemyType);
-            }
-
-            if (mainEnemyAmount < enemyAmount)
-            {
-                var enemyType = EmargingEnemiesList.EnemyTypes.RandomGet();
-                for (int i = mainEnemyAmount; i < enemyAmount; i++)
-                {
-                    enemies[i] = enemyFactory.CreateEnemy(enemyType);
-                }
-            }
-
-            enemyManager.SetEnemies(enemies);
+        public void StartButtle(IEnumerable<EnemyType> encountedEnemyTypes)
+        {
+            //TODO: ‚·‚×‚Ä‚Ì¶¬ƒLƒƒƒ‰‚ğw’è‚·‚éê‡‚ÌŠÖ”‚ğì¬‚·‚é
         }
     }
 }

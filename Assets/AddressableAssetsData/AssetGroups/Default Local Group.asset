@@ -21,6 +21,10 @@ MonoBehaviour:
     m_Address: EnemyStatusDataTable
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: 53c1619acb3bc524d8c6a41e65ac78e3
+    m_Address: PlayableCharacterStatusDataTable
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 4c23a20d15fd4364f9c5c360b669400a, type: 2}
   m_SchemaSet:
