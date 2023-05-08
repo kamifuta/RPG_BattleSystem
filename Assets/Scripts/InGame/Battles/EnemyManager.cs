@@ -8,9 +8,9 @@ namespace InGame.Buttles
 {
     public class EnemyManager
     {
-        public Enemy[] enemies { get; private set; }
+        public EnemyCharacter[] enemies { get; private set; }
 
-        public void SetEnemies(IEnumerable<Enemy> enemies)
+        public void SetEnemies(IEnumerable<EnemyCharacter> enemies)
         {
             this.enemies = enemies.ToArray();
         }

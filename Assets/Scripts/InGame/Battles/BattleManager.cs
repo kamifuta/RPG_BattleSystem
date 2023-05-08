@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace InGame.Buttles
 {
-    public class ButtleManager
+    public class BattleManager
     {
         private EnemyManager enemyManager;
         private EmargingEnemiesList EmargingEnemiesList;
@@ -20,7 +20,7 @@ namespace InGame.Buttles
 
         private void GenerateEnemies(EnemyType encountedEnemyType, int enemyAmount)
         {
-            Enemy[] enemies = new Enemy[enemyAmount];
+            EnemyCharacter[] enemies = new EnemyCharacter[enemyAmount];
             var mainEnemyAmount = Random.Range(1, enemyAmount + 1);
 
             for(int i = 0; i < mainEnemyAmount; i++)

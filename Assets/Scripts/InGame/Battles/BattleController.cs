@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace InGame.Buttles
 {
-    public class ButtleController
+    public class BattleController
     {
         private EnemyManager enemyManager;
         private PartyManager partyManager;

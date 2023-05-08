@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace InGame.Characters.Enemies
 {
-    public class Enemy : BaseCharacter
+    public class EnemyCharacter : BaseCharacter
     {
-        public Enemy(CharacterStatus characterStatus) : base(characterStatus)
+        public EnemyCharacter(CharacterStatus characterStatus) : base(characterStatus)
         {
 
         }

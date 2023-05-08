@@ -1,3 +1,4 @@
+using InGame.Buttles.EnemyAis;
 using InGame.Characters;
 using InGame.Characters.Enemies;
 using System.Collections;
@@ -16,11 +17,11 @@ namespace InGame.Buttles
             enemyStatusDataTable = Addressables.LoadAssetAsync<EnemyStatusDataTable>("EnemyStatusDataTable").Result;
         }
 
-        public Enemy CreateEnemy(EnemyType enemyType)
+        public EnemyCharacter CreateEnemy(EnemyType enemyType)
         {
             var statusData = enemyStatusDataTable.GetStatusData(enemyType);
             var status = new CharacterStatus(statusData);
-            var enemy = new Enemy(status);
+            var enemy = new EnemyCharacter(status);
             return enemy;
         }
     }
