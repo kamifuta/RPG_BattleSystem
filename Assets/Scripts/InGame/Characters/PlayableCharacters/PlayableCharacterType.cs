@@ -6,6 +6,6 @@ namespace InGame.Characters.PlayableCharacters
 {
     public enum PlayableCharacterType
     {
-        Test,
+        Player,
     }
 }

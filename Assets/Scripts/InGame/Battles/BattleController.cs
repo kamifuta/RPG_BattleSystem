@@ -14,6 +14,7 @@ using VContainer.Unity;
 using VContainer;
 using Cysharp.Threading;
 using Cysharp.Threading.Tasks;
+using Log;
 
 namespace InGame.Buttles
 {
@@ -57,6 +58,8 @@ namespace InGame.Buttles
             fieldManager.EncountedEnemyObservable
                 .Subscribe(enemyType =>
                 {
+                    LogWriter.SetFileName();
+
                     GenerateEnemies(enemyType);
                     turnManager.StartTurn();
                     SelectPlayableCharactersAction();
@@ -68,8 +71,8 @@ namespace InGame.Buttles
         private void GenerateEnemies(EnemyType encountedEnemyType)
         {
             //TODO: 様々な生成のパターンを実装する（複数種の生成や決められたパターンの生成）
-            //NOTE: 現在は一体だけ生成する
-            enemyManager.GenerateEnemies(encountedEnemyType, 1);
+            //NOTE: 現在は一種類だけ生成する
+            enemyManager.GenerateEnemies(encountedEnemyType, 3);
         }
 
         private void SelectPlayableCharactersAction()
@@ -88,6 +91,8 @@ namespace InGame.Buttles
         {
             while (true)
             {
+                LogCharacterStatus();
+
                 var characters = GetSortedCharacterByAgility();
                 foreach(var character in characters)
                 {
@@ -104,7 +109,6 @@ namespace InGame.Buttles
                     await UniTask.DelayFrame(1);
                 }
 
-                Debug.Log("ターン終了");
                 turnManager.NextTurn();
                 SelectPlayableCharactersAction();
             }
@@ -126,7 +130,7 @@ namespace InGame.Buttles
                             action.action.Invoke(character);
                             break;
                         case TargetType.Enemy:
-                            var target = enemyManager.enemies.RandomGet();
+                            var target = enemyManager.enemies.Where(x=>!x.characterHealth.IsDead).RandomGet();
                             action.action.Invoke(target);
                             break;
                     }
@@ -146,7 +150,7 @@ namespace InGame.Buttles
                             action.action.Invoke(character);
                             break;
                         case TargetType.Enemy:
-                            var target = partyManager.partyCharacters.RandomGet();
+                            var target = partyManager.partyCharacters.Where(x => !x.characterHealth.IsDead).RandomGet();
                             action.action.Invoke(target);
                             break;
                     }
@@ -156,10 +160,10 @@ namespace InGame.Buttles
 
         private ResultType CheckBattleResult()
         {
-            if (enemyManager.enemies.All(x => x.IsDead))
+            if (enemyManager.enemies.All(x => x.characterHealth.IsDead))
                 return ResultType.Win;
 
-            if (partyManager.partyCharacters.All(x => x.IsDead))
+            if (partyManager.partyCharacters.All(x => x.characterHealth.IsDead))
                 return ResultType.Lose;
 
             return ResultType.None;
@@ -167,13 +171,41 @@ namespace InGame.Buttles
 
         private void FinishBattle(ResultType result)
         {
-            Debug.Log("Finish");
+            switch (result)
+            {
+                case ResultType.Win:
+                    LogWriter.WriteLog($"勝利");
+                    break;
+                case ResultType.Lose:
+                    LogWriter.WriteLog($"負け");
+                    break;
+            }
+
+            LogCharacterStatus();
         }
 
         private IEnumerable<BaseCharacter> GetSortedCharacterByAgility()
-            => enemyManager.enemies.Cast<BaseCharacter>()
+            => enemyManager.enemies.Where(x=>!x.characterHealth.IsDead)
+                .Cast<BaseCharacter>()
                 .Concat(partyManager.partyCharacters)
                 .OrderBy(x => x.characterStatus.Agility);
+
+        private void LogCharacterStatus()
+        {
+            LogWriter.WriteLog($"味方のステータス--------------------");
+            foreach(var character in partyManager.partyCharacters)
+            {
+                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP}/{character.characterStatus.MaxHP}");
+            }
+            LogWriter.WriteLog($"------------------------------------");
+
+            LogWriter.WriteLog($"敵のステータス--------------------");
+            foreach(var enemy in enemyManager.enemies)
+            {
+                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP}/{enemy.characterStatus.MaxHP}");
+            }
+            LogWriter.WriteLog($"------------------------------------");
+        }
     }
 }
 

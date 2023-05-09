@@ -7,12 +7,15 @@ namespace InGame.Characters
 {
     public class CharacterHealth : MonoBehaviour
     {
-        private int currentHP;
+        public int currentHP { get; private set; }
 
         public bool IsDead => currentHP <= 0;
 
+        private readonly int MaxHP;
+
         public CharacterHealth(int maxHP)
         {
+            MaxHP = maxHP;
             currentHP = maxHP;
         }
 
@@ -23,6 +26,7 @@ namespace InGame.Characters
                 throw new ArgumentException("ダメージ値が0未満です");
             }
             currentHP -= damageValue;
+            currentHP = Mathf.Clamp(currentHP, 0, MaxHP);
             Debug.Log($"currentHP:{currentHP}");
         }
     }

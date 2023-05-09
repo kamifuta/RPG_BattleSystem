@@ -1,5 +1,6 @@
 using InGame.Buttles.EnemyAIs;
 using InGame.Characters.Enemies;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,8 @@ namespace InGame.Buttles
             {
                 enemies[i] = enemyFactory.CreateEnemyCharacter(encountedEnemyType);
                 enemyAIs[i] = enemyFactory.CreateEnemyAI(enemies[i]);
+
+                enemies[i].SetCharacterName($"{Enum.GetName(typeof(EnemyType), encountedEnemyType)}_{(char)('A' + i)}");
             }
         }
 

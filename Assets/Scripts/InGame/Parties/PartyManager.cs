@@ -18,9 +18,11 @@ namespace InGame.Parties
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    var statusData = result.Result.GetStatusData(PlayableCharacterType.Test);
+                    var statusData = result.Result.GetStatusData(PlayableCharacterType.Player);
                     var status = new CharacterStatus(statusData);
                     partyCharacters[i] = new PlayableCharacter(status);
+
+                    partyCharacters[i].SetCharacterName($"{Enum.GetName(typeof(PlayableCharacterType), PlayableCharacterType.Player)}_{(char)('A' + i)}");
                 }
             };
         }

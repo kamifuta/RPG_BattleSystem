@@ -1,4 +1,5 @@
 using InGame.Characters.PlayableCharacters;
+using Log;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,13 +15,14 @@ namespace InGame.Buttles
         public void StartTurn()
         {
             turnCount = 1;
-            Debug.Log($"ターン{ turnCount}開始");
+            LogWriter.WriteLog($"ターン{ turnCount}開始");
         }
 
         public void NextTurn()
         {
+            LogWriter.WriteLog($"ターン{ turnCount}終了\n");
             turnCount++;
-            Debug.Log($"ターン{ turnCount}開始");
+            LogWriter.WriteLog($"ターン{ turnCount}開始");
         }
     }
 }

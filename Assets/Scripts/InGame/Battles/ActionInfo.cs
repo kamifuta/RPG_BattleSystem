@@ -33,7 +33,7 @@ namespace InGame.Buttles
             if (target == null)
                 return false;
 
-            if (target.IsDead && !IsTargetableDeadCharacter)
+            if (target.characterHealth.IsDead && !IsTargetableDeadCharacter)
                 return false;
 
             action?.Invoke(target);

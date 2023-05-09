@@ -34,6 +34,9 @@ namespace InGame.Buttles.PlayerAIs
         {
             foreach(var character in partyManager.partyCharacters)
             {
+                if (character.characterHealth.IsDead)
+                    continue;
+
                 var target = enemyManager.enemies.RandomGet();
                 ActionInfo action = new ActionInfo(character.Attack, target, TargetType.Enemy);
                 playableCharacterActionManager.SetPlayableCharacterAction(character, action);
