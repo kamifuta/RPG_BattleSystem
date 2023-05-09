@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace InGame.Characters
 {
-    public class CharacterBuff : MonoBehaviour
+    public class CharacterBuff
     {
         public bool IsDefencing { get; private set; }
 

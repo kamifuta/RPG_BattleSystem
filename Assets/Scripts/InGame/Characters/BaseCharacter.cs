@@ -13,6 +13,7 @@ namespace InGame.Characters
         public CharacterStatus characterStatus { get; }
 
         public readonly CharacterHealth characterHealth;
+        public bool HadDoneAction { get; private set; } = false;
 
         public BaseCharacter(CharacterStatus characterStatus)
         {
@@ -31,6 +32,7 @@ namespace InGame.Characters
             LogWriter.WriteLog($"{characterName}‚ÌUŒ‚");
 
             target.ApplyDamage(new Damage(characterStatus.AttackValue, DamageType.HP));
+            HadDoneAction = true;
         }
 
         public void ApplyDamage(Damage damage)
@@ -48,11 +50,17 @@ namespace InGame.Characters
         {
             characterStatus.characterBuff.SetIsDefencing(true);
             LogWriter.WriteLog($"{characterName}‚Íg‚ğç‚Á‚Ä‚¢‚é");
+            HadDoneAction = true;
         }
 
         public void Heal(Healing healing)
         {
 
+        }
+
+        public void ResetFlag()
+        {
+            HadDoneAction = false;
         }
     }
 }

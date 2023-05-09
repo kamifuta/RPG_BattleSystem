@@ -38,7 +38,7 @@ namespace InGame.Buttles.PlayerAIs
                     continue;
 
                 var random = UnityEngine.Random.value;
-                if (random < 0.1f)
+                if (random < 0.7f)
                 {
                     var target = enemyManager.enemies.RandomGet();
                     ActionInfo action = new ActionInfo(character.Attack, target, TargetType.Enemy);

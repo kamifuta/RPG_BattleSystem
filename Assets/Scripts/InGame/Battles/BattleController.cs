@@ -101,6 +101,9 @@ namespace InGame.Buttles
                     if (character.characterHealth.IsDead)
                         continue;
 
+                    if (character.HadDoneAction)
+                        continue;
+
                     //ÇªÇÍÇºÇÍÇÃÉLÉÉÉâÇÃçsìÆÇé¿çsÇ∑ÇÈ
                     ExecuteCharacterAction(character);
 
@@ -114,6 +117,7 @@ namespace InGame.Buttles
                     await UniTask.DelayFrame(1);
                 }
 
+                ResetFlag();
                 ClearCharacterBuff();
                 turnManager.NextTurn();
                 SelectPlayableCharactersAction();
@@ -186,10 +190,17 @@ namespace InGame.Buttles
 
         private void ClearCharacterBuff()
         {
-            var allCharacters = enemyManager.enemies.Cast<BaseCharacter>().Concat(partyManager.partyCharacters);
-            foreach(var character in allCharacters)
+            foreach(var character in AllCharacters)
             {
                 character.characterStatus.characterBuff.SetIsDefencing(false);
+            }
+        }
+
+        private void ResetFlag()
+        {
+            foreach (var character in AllCharacters)
+            {
+                character.ResetFlag();
             }
         }
 
@@ -205,6 +216,7 @@ namespace InGame.Buttles
                     break;
             }
 
+            Debug.Log("Finish Battle");
             LogCharacterStatus();
         }
 
@@ -213,6 +225,9 @@ namespace InGame.Buttles
                 .Cast<BaseCharacter>()
                 .Concat(partyManager.partyCharacters)
                 .OrderBy(x => x.characterStatus.Agility);
+
+        private IEnumerable<BaseCharacter> AllCharacters
+            => enemyManager.enemies.Cast<BaseCharacter>().Concat(partyManager.partyCharacters);
 
         private void LogCharacterStatus()
         {

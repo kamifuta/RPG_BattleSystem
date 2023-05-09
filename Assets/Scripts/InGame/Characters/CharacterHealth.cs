@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace InGame.Characters
 {
-    public class CharacterHealth : MonoBehaviour
+    public class CharacterHealth
     {
         public int currentHP { get; private set; }
 
