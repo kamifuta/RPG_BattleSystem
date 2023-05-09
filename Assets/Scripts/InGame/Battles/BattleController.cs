@@ -93,9 +93,14 @@ namespace InGame.Buttles
             {
                 LogCharacterStatus();
 
+                ExecuteHighPriorityAction();
+
                 var characters = GetSortedCharacterByAgility();
                 foreach(var character in characters)
                 {
+                    if (character.characterHealth.IsDead)
+                        continue;
+
                     //ÇªÇÍÇºÇÍÇÃÉLÉÉÉâÇÃçsìÆÇé¿çsÇ∑ÇÈ
                     ExecuteCharacterAction(character);
 
@@ -109,8 +114,18 @@ namespace InGame.Buttles
                     await UniTask.DelayFrame(1);
                 }
 
+                ClearCharacterBuff();
                 turnManager.NextTurn();
                 SelectPlayableCharactersAction();
+            }
+        }
+
+        private void ExecuteHighPriorityAction()
+        {
+            var actions=playableCharacterActionManager.GetHighPriorityAction();
+            foreach(var action in actions)
+            {
+                action.ExecuteAction();
             }
         }
 
@@ -167,6 +182,15 @@ namespace InGame.Buttles
                 return ResultType.Lose;
 
             return ResultType.None;
+        }
+
+        private void ClearCharacterBuff()
+        {
+            var allCharacters = enemyManager.enemies.Cast<BaseCharacter>().Concat(partyManager.partyCharacters);
+            foreach(var character in allCharacters)
+            {
+                character.characterStatus.characterBuff.SetIsDefencing(false);
+            }
         }
 
         private void FinishBattle(ResultType result)

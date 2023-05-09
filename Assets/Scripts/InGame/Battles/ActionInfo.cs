@@ -18,13 +18,15 @@ namespace InGame.Buttles
         public Action<BaseCharacter> action { get; private set; }
         private BaseCharacter target;
         public TargetType targetType { get; private set; }
+        public int priority { get; private set; }
         private bool IsTargetableDeadCharacter;
 
-        public ActionInfo(Action<BaseCharacter> action, BaseCharacter target, TargetType targetType, bool IsTargetableDeadCharacter=false)
+        public ActionInfo(Action<BaseCharacter> action, BaseCharacter target, TargetType targetType, int priority=0, bool IsTargetableDeadCharacter=false)
         {
             this.action = action;
             this.target = target;
             this.targetType = targetType;
+            this.priority = priority;
             this.IsTargetableDeadCharacter = IsTargetableDeadCharacter;
         }
 

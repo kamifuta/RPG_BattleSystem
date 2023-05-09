@@ -4,6 +4,7 @@ using UnityEngine;
 using InGame.Characters.PlayableCharacters;
 using System;
 using InGame.Characters;
+using System.Linq;
 
 namespace InGame.Buttles
 {
@@ -23,6 +24,9 @@ namespace InGame.Buttles
 
         public ActionInfo GetCharacterAction(PlayableCharacter playableCharacter)
             => playableCharacterActionDic[playableCharacter];
+
+        public IEnumerable<ActionInfo> GetHighPriorityAction()
+            => playableCharacterActionDic.Where(x => x.Value.priority > 0).Select(x => x.Value);
     }
 }
 

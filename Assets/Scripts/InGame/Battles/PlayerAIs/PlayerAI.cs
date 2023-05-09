@@ -37,9 +37,20 @@ namespace InGame.Buttles.PlayerAIs
                 if (character.characterHealth.IsDead)
                     continue;
 
-                var target = enemyManager.enemies.RandomGet();
-                ActionInfo action = new ActionInfo(character.Attack, target, TargetType.Enemy);
-                playableCharacterActionManager.SetPlayableCharacterAction(character, action);
+                var random = UnityEngine.Random.value;
+                if (random < 0.1f)
+                {
+                    var target = enemyManager.enemies.RandomGet();
+                    ActionInfo action = new ActionInfo(character.Attack, target, TargetType.Enemy);
+                    playableCharacterActionManager.SetPlayableCharacterAction(character, action);
+                }
+                else
+                {
+                    ActionInfo action = new ActionInfo(character.Defence, character, TargetType.Self, priority: 1);
+                    playableCharacterActionManager.SetPlayableCharacterAction(character, action);
+                }
+
+                
             }
         }
     }

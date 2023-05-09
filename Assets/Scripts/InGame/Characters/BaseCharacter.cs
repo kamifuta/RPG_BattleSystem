@@ -9,9 +9,8 @@ namespace InGame.Characters
 {
     public class BaseCharacter
     {
-        public string characterName;
+        public string characterName { get; private set; }
         public CharacterStatus characterStatus { get; }
-        //public bool IsDead { get; private set; }
 
         public readonly CharacterHealth characterHealth;
 
@@ -25,11 +24,6 @@ namespace InGame.Characters
         public void SetCharacterName(string characterName)
         {
             this.characterName = characterName;
-        }
-
-        public void SetCharacterNameIdentifier(int identifier)
-        {
-            characterName = $"{characterName}_{identifier}";
         }
 
         public void Attack(BaseCharacter target)
@@ -48,6 +42,12 @@ namespace InGame.Characters
 
             if(characterHealth.IsDead)
                 LogWriter.WriteLog($"{characterName}‚Í“|‚ê‚½");
+        }
+
+        public void Defence(BaseCharacter target)
+        {
+            characterStatus.characterBuff.SetIsDefencing(true);
+            LogWriter.WriteLog($"{characterName}‚Íg‚ğç‚Á‚Ä‚¢‚é");
         }
 
         public void Heal(Healing healing)

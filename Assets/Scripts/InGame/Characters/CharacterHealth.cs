@@ -27,7 +27,6 @@ namespace InGame.Characters
             }
             currentHP -= damageValue;
             currentHP = Mathf.Clamp(currentHP, 0, MaxHP);
-            Debug.Log($"currentHP:{currentHP}");
         }
     }
 }
