@@ -16,9 +16,15 @@ namespace InGame.Characters
             currentHP = maxHP;
         }
 
-        public void ApplyDamage(int damageValue)
+        public void ApplyDamage(int value)
         {
-            currentHP -= damageValue;
+            currentHP -= value;
+            currentHP = Mathf.Clamp(currentHP, 0, MaxHP);
+        }
+
+        public void Heal(int value)
+        {
+            currentHP += value;
             currentHP = Mathf.Clamp(currentHP, 0, MaxHP);
         }
     }

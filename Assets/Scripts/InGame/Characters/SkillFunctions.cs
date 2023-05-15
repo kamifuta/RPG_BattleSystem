@@ -13,7 +13,8 @@ namespace InGame.Characters.Skills
         FirstAttack,
         LastAttack,
         Defence,
-        BigDefence
+        BigDefence,
+        UseItem,
     }
 
     public static class SkillFunctions

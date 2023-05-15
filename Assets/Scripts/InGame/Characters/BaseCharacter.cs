@@ -14,6 +14,7 @@ namespace InGame.Characters
         public CharacterStatus characterStatus { get; }
 
         public readonly CharacterHealth characterHealth;
+        public readonly CharacterMagic characterMagic;
         public bool HadDoneAction { get; private set; } = false;
         public List<SkillType> rememberSkills { get; private set; } = new List<SkillType>() { SkillType.NormalAttack, SkillType.Defence };
 
@@ -22,6 +23,7 @@ namespace InGame.Characters
             this.characterStatus = characterStatus;
 
             characterHealth = new CharacterHealth(characterStatus.MaxHP);
+            characterMagic = new CharacterMagic(characterStatus.MaxMP);
         }
 
         public void SetCharacterName(string characterName)
@@ -46,7 +48,8 @@ namespace InGame.Characters
 
         public void Heal(Healing healing)
         {
-
+            characterHealth.Heal(healing.HealHPValue);
+            characterMagic.HealMP(healing.HealMPValue);
         }
 
         public void SetHadDoneAction(bool value)

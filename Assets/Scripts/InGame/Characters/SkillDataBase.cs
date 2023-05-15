@@ -10,7 +10,7 @@ namespace InGame.Characters.Skills
         private static readonly List<SkillData> skillDataList = new List<SkillData>()
         {
             new SkillData(SkillType.NormalAttack, "UŒ‚", "•’Ê‚ÌUŒ‚", 0, TargetType.Enemy, 0, false, SkillFunctions.NormalAttack),
-            new SkillData(SkillType.Defence, "–hŒä", "–hŒä‚ğ“ñ”{‚É‚·‚é", 0, TargetType.Enemy, 1, false, SkillFunctions.Defence),
+            new SkillData(SkillType.Defence, "–hŒä", "–hŒä‚ğ“ñ”{‚É‚·‚é", 0, TargetType.Self, 1, false, SkillFunctions.Defence),
         };
 
         public static IEnumerable<SkillData> GetUsableSkills(IEnumerable<SkillType> skillTypes, int currentMP)
