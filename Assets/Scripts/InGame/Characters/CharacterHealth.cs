@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace InGame.Characters
@@ -21,10 +18,6 @@ namespace InGame.Characters
 
         public void ApplyDamage(int damageValue)
         {
-            if (damageValue < 0)
-            {
-                throw new ArgumentException("ダメージ値が0未満です");
-            }
             currentHP -= damageValue;
             currentHP = Mathf.Clamp(currentHP, 0, MaxHP);
         }

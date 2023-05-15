@@ -1,3 +1,4 @@
+using InGame.Characters;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,16 +14,17 @@ namespace InGame.Damages
 
     public class Damage
     {
-        private readonly int attackValue;
+        private readonly BaseCharacter attacker;
         private readonly DamageType damageType;
 
-        public Damage(int attackValue, DamageType damageType)
+        public Damage(BaseCharacter attacker, DamageType damageType)
         {
-            this.attackValue = attackValue;
+            this.attacker = attacker;
             this.damageType = damageType;
         }
 
-        public int AttackValue => attackValue;
+        public BaseCharacter Attacker => attacker;
+        public int AttackValue => attacker.characterStatus.AttackValue;
         public DamageType DamageType => damageType;
     }
 }

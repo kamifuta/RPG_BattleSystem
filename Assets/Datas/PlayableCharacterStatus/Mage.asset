@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 45e5f0de7bcb1bb498c9a8241e45a047, type: 3}
-  m_Name: GolemStatusData
+  m_Name: Mage
   m_EditorClassIdentifier: 
-  maxHP: 1000
-  maxMP: 10000
-  attackValue: 250
-  magicValue: 100
-  defenceValue: 300
-  magicDefenceValue: 200
-  agility: 60
+  maxHP: 300
+  maxMP: 350
+  attackValue: 30
+  magicValue: 150
+  defenceValue: 80
+  magicDefenceValue: 125
+  agility: 80

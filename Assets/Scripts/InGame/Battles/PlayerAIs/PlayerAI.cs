@@ -1,13 +1,6 @@
-using InGame.Buttles;
-using InGame.Characters;
-using InGame.Characters.PlayableCharacters;
+using InGame.Characters.Skills;
 using InGame.Parties;
 using MyUtil;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UniRx;
 using VContainer;
 
 namespace InGame.Buttles.PlayerAIs
@@ -41,16 +34,14 @@ namespace InGame.Buttles.PlayerAIs
                 if (random < 0.7f)
                 {
                     var target = enemyManager.enemies.RandomGet();
-                    ActionInfo action = new ActionInfo(character.Attack, target, TargetType.Enemy);
+                    ActionData action = new ActionData(SkillDataBase.GetSkillData(SkillType.NormalAttack), character, target);
                     playableCharacterActionManager.SetPlayableCharacterAction(character, action);
                 }
                 else
                 {
-                    ActionInfo action = new ActionInfo(character.Defence, character, TargetType.Self, priority: 1);
+                    ActionData action = new ActionData(SkillDataBase.GetSkillData(SkillType.Defence), character, character);
                     playableCharacterActionManager.SetPlayableCharacterAction(character, action);
                 }
-
-                
             }
         }
     }

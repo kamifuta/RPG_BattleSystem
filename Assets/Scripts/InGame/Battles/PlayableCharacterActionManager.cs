@@ -5,14 +5,15 @@ using InGame.Characters.PlayableCharacters;
 using System;
 using InGame.Characters;
 using System.Linq;
+using InGame.Characters.Skills;
 
 namespace InGame.Buttles
 {
     public class PlayableCharacterActionManager
     {
-        private Dictionary<PlayableCharacter, ActionInfo> playableCharacterActionDic = new Dictionary<PlayableCharacter, ActionInfo>();
+        private Dictionary<PlayableCharacter, ActionData> playableCharacterActionDic = new Dictionary<PlayableCharacter, ActionData>();
 
-        public void SetPlayableCharacterAction(PlayableCharacter playableCharacter, ActionInfo action)
+        public void SetPlayableCharacterAction(PlayableCharacter playableCharacter, ActionData action)
         {
             playableCharacterActionDic.Add(playableCharacter, action);
         }
@@ -22,11 +23,14 @@ namespace InGame.Buttles
             playableCharacterActionDic.Clear();
         }
 
-        public ActionInfo GetCharacterAction(PlayableCharacter playableCharacter)
-            => playableCharacterActionDic[playableCharacter];
+        public KeyValuePair<PlayableCharacter, ActionData> GetCharacterActionPair(PlayableCharacter playableCharacter)
+            => playableCharacterActionDic.Single(x => x.Key == playableCharacter);
 
-        public IEnumerable<ActionInfo> GetHighPriorityAction()
-            => playableCharacterActionDic.Where(x => x.Value.priority > 0).Select(x => x.Value);
+        public ActionData GetCharacterAction(PlayableCharacter playableCharacter)
+            => playableCharacterActionDic.Single(x => x.Key == playableCharacter).Value;
+
+        public IEnumerable<KeyValuePair<PlayableCharacter, ActionData>> GetHighPriorityAction()
+            => playableCharacterActionDic.Where(x => x.Value.skillData.priority > 0);
     }
 }
 

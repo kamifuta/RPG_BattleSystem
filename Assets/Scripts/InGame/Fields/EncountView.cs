@@ -17,7 +17,7 @@ namespace InGame.Fields
 
         private void Start()
         {
-            button.onClick.AddListener(() => encountSubject.OnNext(EnemyType.Slime));
+            button.onClick.AddListener(() => encountSubject.OnNext(EnemyType.Golem));
         }
     }
 }

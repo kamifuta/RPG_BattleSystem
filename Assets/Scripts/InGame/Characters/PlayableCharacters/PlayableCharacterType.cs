@@ -7,5 +7,9 @@ namespace InGame.Characters.PlayableCharacters
     public enum PlayableCharacterType
     {
         Player,
+        Warrior,
+        Priest,
+        Mage,
+        MartialArtist,
     }
 }

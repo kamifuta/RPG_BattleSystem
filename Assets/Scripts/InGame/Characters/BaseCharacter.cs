@@ -1,3 +1,4 @@
+using InGame.Characters.Skills;
 using InGame.Damages;
 using InGame.Healings;
 using Log;
@@ -14,6 +15,7 @@ namespace InGame.Characters
 
         public readonly CharacterHealth characterHealth;
         public bool HadDoneAction { get; private set; } = false;
+        public List<SkillType> rememberSkills { get; private set; } = new List<SkillType>() { SkillType.NormalAttack, SkillType.Defence };
 
         public BaseCharacter(CharacterStatus characterStatus)
         {
@@ -27,18 +29,14 @@ namespace InGame.Characters
             this.characterName = characterName;
         }
 
-        public void Attack(BaseCharacter target)
-        {
-            LogWriter.WriteLog($"{characterName}ÇÃçUåÇ");
-
-            target.ApplyDamage(new Damage(characterStatus.AttackValue, DamageType.HP));
-            HadDoneAction = true;
-        }
-
-        public void ApplyDamage(Damage damage)
+        public virtual void ApplyDamage(Damage damage)
         {
             var baseDamage = (damage.AttackValue / 2) - (characterStatus.DefecnceValue / 4);
             var damageValue = Mathf.CeilToInt(baseDamage + Random.Range(-0.16f, 0.16f) * baseDamage);
+            if (damageValue < 0)
+            {
+                damageValue = Random.Range(0, 2);
+            }
             characterHealth.ApplyDamage(damageValue);
             LogWriter.WriteLog($"{characterName}Ç…{damageValue}ÇÃÉ_ÉÅÅ[ÉW");
 
@@ -46,16 +44,14 @@ namespace InGame.Characters
                 LogWriter.WriteLog($"{characterName}ÇÕì|ÇÍÇΩ");
         }
 
-        public void Defence(BaseCharacter target)
-        {
-            characterStatus.characterBuff.SetIsDefencing(true);
-            LogWriter.WriteLog($"{characterName}ÇÕêgÇéÁÇ¡ÇƒÇ¢ÇÈ");
-            HadDoneAction = true;
-        }
-
         public void Heal(Healing healing)
         {
 
+        }
+
+        public void SetHadDoneAction(bool value)
+        {
+            HadDoneAction = value;
         }
 
         public void ResetFlag()

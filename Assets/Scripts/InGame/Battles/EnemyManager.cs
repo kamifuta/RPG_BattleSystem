@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace InGame.Buttles
 {
-    public class EnemyManager
+    public class EnemyManager : IDisposable
     {
         public EnemyAI[] enemyAIs { get; private set; }
         public EnemyCharacter[] enemies { get; private set; }
@@ -35,6 +35,17 @@ namespace InGame.Buttles
 
         public EnemyAI GetEnemyAI(EnemyCharacter enemyCharacter)
             => enemyAIs.Single(x => x.targetEnemy == enemyCharacter);
+
+        public void Dispose()
+        {
+            foreach(var AI in enemyAIs)
+            {
+                AI.Dispose();
+            }
+
+            enemyAIs = Enumerable.Empty<EnemyAI>().ToArray();
+            Debug.Log("EnemyManager‚Í”jŠü‚³‚ê‚Ü‚µ‚½");
+        }
     }
 }
 

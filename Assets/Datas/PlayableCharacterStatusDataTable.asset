@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41ca8533939104a42a42f528637b526c, type: 3}
+  m_Name: PlayableCharacterStatusDataTable
+  m_EditorClassIdentifier: 
+  playableCharacterStatusDatas:
+  - playableCharacterType: 0
+    characterStatusData: {fileID: 11400000, guid: cb8130415f0df5d4ab44047f6a32a727, type: 2}
+  - playableCharacterType: 1
+    characterStatusData: {fileID: 11400000, guid: 3cb938fbac123e9479204c5cea54ab0c, type: 2}
+  - playableCharacterType: 2
+    characterStatusData: {fileID: 11400000, guid: 72afd5a74b50c0347922bf93f5d62644, type: 2}
+  - playableCharacterType: 3
+    characterStatusData: {fileID: 11400000, guid: 743b06b2523d581469cf07d8454596d2, type: 2}
+  - playableCharacterType: 4
+    characterStatusData: {fileID: 11400000, guid: e2343ab08bfde42468fcb3fd5de6523b, type: 2}

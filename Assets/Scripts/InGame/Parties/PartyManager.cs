@@ -11,20 +11,33 @@ namespace InGame.Parties
     public class PartyManager
     {
         public PlayableCharacter[] partyCharacters { get; private set; } = new PlayableCharacter[4];
+        private PlayableCharacterStatusDataTable statusDataTable;
 
         public PartyManager()
         {
-            Addressables.LoadAssetAsync<PlayableCharacterStatusDataTable>("PlayableCharacterStatusDataTable").Completed += result =>
+            Addressables.LoadAssetAsync<PlayableCharacterStatusDataTable>("PlayableCharacterStatusDataTable").Completed += handle =>
             {
-                for (int i = 0; i < 4; i++)
-                {
-                    var statusData = result.Result.GetStatusData(PlayableCharacterType.Player);
-                    var status = new CharacterStatus(statusData);
-                    partyCharacters[i] = new PlayableCharacter(status);
+                statusDataTable = handle.Result;
 
-                    partyCharacters[i].SetCharacterName($"{Enum.GetName(typeof(PlayableCharacterType), PlayableCharacterType.Player)}_{(char)('A' + i)}");
-                }
+                partyCharacters[0] = CreatePlayableCharacter(PlayableCharacterType.Warrior);
+                partyCharacters[0].SetCharacterName($"íŽm");
+
+                partyCharacters[1] = CreatePlayableCharacter(PlayableCharacterType.Priest);
+                partyCharacters[1].SetCharacterName($"‘m—µ");
+
+                partyCharacters[2] = CreatePlayableCharacter(PlayableCharacterType.Mage);
+                partyCharacters[2].SetCharacterName($"–‚–@Žg‚¢");
+
+                partyCharacters[3] = CreatePlayableCharacter(PlayableCharacterType.MartialArtist);
+                partyCharacters[3].SetCharacterName($"•“¬‰Æ");
             };
+        }
+
+        private PlayableCharacter CreatePlayableCharacter(PlayableCharacterType type)
+        {
+            var statusData = statusDataTable.GetStatusData(type);
+            var status = new CharacterStatus(statusData);
+            return new PlayableCharacter(status);
         }
     }
 }
