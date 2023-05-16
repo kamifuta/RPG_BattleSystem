@@ -15,6 +15,7 @@ using Cysharp.Threading.Tasks;
 using Log;
 using System;
 using InGame.Characters.Skills;
+using InGame.Buttles.Actions;
 
 namespace InGame.Buttles
 {
@@ -145,16 +146,20 @@ namespace InGame.Buttles
                 var result = action.ExecuteAction();
                 if (!result)
                 {
+                    ActionArgument arg;
+
                     switch (action.skillData.targetType)
                     {
                         case TargetType.Self:
                             break;
                         case TargetType.Friends:
-                            action.ExecuteAction(character, character);
+                            arg = new ActionArgument(character, character);
+                            action.ExecuteAction(arg);
                             break;
                         case TargetType.Enemy:
                             var target = enemyManager.enemies.Where(x=>!x.characterHealth.IsDead).RandomGet();
-                            action.ExecuteAction(character, target);
+                            arg = new ActionArgument(character, target);
+                            action.ExecuteAction(arg);
                             break;
                     }
                 }
@@ -165,16 +170,20 @@ namespace InGame.Buttles
                 var result = action.ExecuteAction();
                 if (!result)
                 {
+                    ActionArgument arg;
+
                     switch (action.skillData.targetType)
                     {
                         case TargetType.Self:
                             break;
                         case TargetType.Friends:
-                            action.ExecuteAction(character, character);
+                            arg = new ActionArgument(character, character);
+                            action.ExecuteAction(arg);
                             break;
                         case TargetType.Enemy:
                             var target = partyManager.partyCharacters.Where(x => !x.characterHealth.IsDead).RandomGet();
-                            action.ExecuteAction(character, target);
+                            arg = new ActionArgument(character, target);
+                            action.ExecuteAction(arg);
                             break;
                     }
                 }

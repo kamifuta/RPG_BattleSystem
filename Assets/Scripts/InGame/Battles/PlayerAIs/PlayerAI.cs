@@ -2,6 +2,8 @@ using InGame.Characters.Skills;
 using InGame.Parties;
 using MyUtil;
 using VContainer;
+using InGame.Buttles.Actions;
+using InGame.Items;
 
 namespace InGame.Buttles.PlayerAIs
 {
@@ -31,15 +33,23 @@ namespace InGame.Buttles.PlayerAIs
                     continue;
 
                 var random = UnityEngine.Random.value;
-                if (random < 0.7f)
+                if (random < 0.5f)
                 {
                     var target = enemyManager.enemies.RandomGet();
-                    ActionData action = new ActionData(SkillDataBase.GetSkillData(SkillType.NormalAttack), character, target);
+                    var arg = new ActionArgument(character, target);
+                    ActionData action = new ActionData(SkillType.NormalAttack, arg);
+                    playableCharacterActionManager.SetPlayableCharacterAction(character, action);
+                }
+                else if(random < 0.7f)
+                {
+                    var arg = new ActionArgument(character, character);
+                    ActionData action = new ActionData(SkillType.Defence, arg);
                     playableCharacterActionManager.SetPlayableCharacterAction(character, action);
                 }
                 else
                 {
-                    ActionData action = new ActionData(SkillDataBase.GetSkillData(SkillType.Defence), character, character);
+                    var arg = new UseItemActionArgument(character, character, ItemType.Herb);
+                    ActionData action = new ActionData(SkillType.UseItem, arg);
                     playableCharacterActionManager.SetPlayableCharacterAction(character, action);
                 }
             }

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
 using InGame.Characters.Skills;
+using InGame.Buttles.Actions;
 
 namespace InGame.Buttles.EnemyAIs
 {
@@ -34,7 +35,8 @@ namespace InGame.Buttles.EnemyAIs
         {
             //NOTE: Ç∆ÇËÇ†Ç¶Ç∏çUåÇÇ∑ÇÈ
             var target = enemyAIMemory.TargetPlayer;
-            return new ActionData(SkillDataBase.GetSkillData(SkillType.NormalAttack),targetEnemy, target);
+            var arg = new ActionArgument(targetEnemy, target);
+            return new ActionData(SkillType.NormalAttack, arg);
         }
 
         private void ObserveAttacker()

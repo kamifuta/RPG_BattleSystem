@@ -1,3 +1,4 @@
+using InGame.Buttles.Actions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +10,9 @@ namespace InGame.Characters.Skills
     {
         Self,
         Friends,
+        AllFriends,
         Enemy,
+        AllEnemy,
     }
 
     public class SkillData
@@ -21,10 +24,10 @@ namespace InGame.Characters.Skills
         public TargetType targetType { get; private set; }
         public int priority { get; private set; }
         public bool IsTargetableDeadCharacter { get; private set; }
-        public Action<BaseCharacter, BaseCharacter, int> skillFunction { get; private set; }
+        public Action<ActionArgument, int> skillFunction { get; private set; }
 
         public SkillData(SkillType skillType, string skillName, string skillExplane, int consumeMP, TargetType targetType, int priority,
-            bool IsTargetableDeadCharacter, Action<BaseCharacter, BaseCharacter, int> skillFunction)
+            bool IsTargetableDeadCharacter, Action<ActionArgument, int> skillFunction)
         {
             this.skillType = skillType;
             this.skillName = skillName;
@@ -36,9 +39,19 @@ namespace InGame.Characters.Skills
             this.skillFunction = skillFunction;
         }
 
-        public void ExecuteSkill(BaseCharacter user, BaseCharacter target)
+        public void SetTargetType(TargetType targetType)
         {
-            skillFunction?.Invoke(user, target, consumeMP);
+            this.targetType = targetType;
+        }
+
+        public void SetIsTargetableDeadCharacter(bool value)
+        {
+            IsTargetableDeadCharacter = value;
+        }
+
+        public void ExecuteSkill(ActionArgument actionArgument)
+        {
+            skillFunction?.Invoke(actionArgument, consumeMP);
         }
     }
 }
