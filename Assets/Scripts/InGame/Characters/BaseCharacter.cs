@@ -16,7 +16,7 @@ namespace InGame.Characters
         public readonly CharacterHealth characterHealth;
         public readonly CharacterMagic characterMagic;
         public bool HadDoneAction { get; private set; } = false;
-        public List<SkillType> rememberSkills { get; private set; } = new List<SkillType>() { SkillType.NormalAttack, SkillType.Defence };
+        //public List<SkillType> rememberSkills { get; private set; } = new List<SkillType>() { SkillType.NormalAttack, SkillType.Defence };
 
         public BaseCharacter(CharacterStatus characterStatus)
         {
@@ -33,7 +33,7 @@ namespace InGame.Characters
 
         public virtual void ApplyDamage(Damage damage)
         {
-            var baseDamage = (damage.AttackValue / 2) - (characterStatus.DefecnceValue / 4);
+            var baseDamage = (damage.attackValue / 2) - (characterStatus.DefecnceValue / 4);
             var damageValue = Mathf.CeilToInt(baseDamage + Random.Range(-0.16f, 0.16f) * baseDamage);
             if (damageValue < 0)
             {

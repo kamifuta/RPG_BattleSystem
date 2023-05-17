@@ -10,64 +10,85 @@ namespace InGame.Buttles.Actions
 {
     public class ActionData
     {
-        public SkillData skillData { get; private set; }
+        public BaseActionType actionType;
 
-        //private readonly BaseCharacter user;
-        //private readonly BaseCharacter target;
+        private readonly BaseCharacter actor;
+        private readonly BaseCharacter target;
+        public readonly ItemType itemType;
+        public readonly SkillType skillType;
 
         private readonly ActionArgument actionArgument;
 
-        //public ActionData(SkillData skillData, BaseCharacter user, BaseCharacter target)
-        //{
-        //    this.skillData = skillData;
-        //    this.user = user;
-        //    this.target = target;
-        //}
-
-        public ActionData(SkillType skillType, ActionArgument actionArgument)
+        public ActionData(BaseActionType actionType, BaseCharacter actor)
         {
-            this.skillData = SkillDataBase.GetSkillData(skillType);
-            this.actionArgument = actionArgument;
+            this.actionType = actionType;
+            this.actor = actor;
+        }
 
-            if (skillType == SkillType.UseItem)
-            {
-                var arg = actionArgument as UseItemActionArgument;
-                var item = ItemDataBase.GetItemData(arg.useItemType);
-                skillData.SetTargetType(item.targetType);
-                skillData.SetIsTargetableDeadCharacter(item.IsTargetableDeadCharacter);
-            }
+        public ActionData(BaseActionType actionType, BaseCharacter actor, BaseCharacter target)
+        {
+            this.actionType = actionType;
+            this.actor = actor;
+            this.target = target;
+        }
+
+        public ActionData(BaseActionType actionType, BaseCharacter actor, BaseCharacter target, ItemType itemType)
+        {
+            this.actionType = actionType;
+            this.actor = actor;
+            this.target = target;
+            this.itemType = itemType;
+        }
+
+        public ActionData(BaseActionType actionType, BaseCharacter actor, BaseCharacter target, SkillType skillType)
+        {
+            this.actionType = actionType;
+            this.actor = actor;
+            this.target = target;
+            this.skillType = skillType;
         }
 
         public bool ExecuteAction()
         {
-            if (actionArgument == null)
-                return false;
-
-            if (actionArgument.targets.Count() == 1)
+            switch (actionType)
             {
-                var target = actionArgument.targets.Single();
-                if (target.characterHealth.IsDead && !skillData.IsTargetableDeadCharacter)
-                    return false;
+                case BaseActionType.NormalAttack:
+                    if (target.characterHealth.IsDead)
+                        return false;
+                    BaseActionFunctions.NormalAttack(actor, target);
+                    break;
+                case BaseActionType.Defence:
+                    BaseActionFunctions.Defence(actor);
+                    break;
+                case BaseActionType.UseItem:
+                    var item = ItemDataBase.GetItemData(itemType);
+                    if (!item.IsTargetableDeadCharacter && target.characterHealth.IsDead)
+                        return false;
+                    BaseActionFunctions.UseItem(actor, target, itemType);
+                    break;
+                case BaseActionType.UseSkill:
+                    var skill = SkillDataBase.GetSkillData(skillType);
+                    if (skill.IsTargetableDeadCharacter && target.characterHealth.IsDead)
+                        return false;
+                    BaseActionFunctions.UseSkill(actor, target, skillType);
+                    break;
             }
-            
-            skillData.ExecuteSkill(actionArgument);
+
             return true;
         }
 
-        public bool ExecuteAction(ActionArgument actionArgument)
+        public void ExecuteAction(BaseCharacter target)
         {
-            if (actionArgument == null)
-                return false;
-
-            if (actionArgument.targets.Count() == 1)
+            switch (actionType)
             {
-                var target = actionArgument.targets.Single();
-                if (target.characterHealth.IsDead && !skillData.IsTargetableDeadCharacter)
-                    return false;
+                case BaseActionType.NormalAttack:
+                    BaseActionFunctions.NormalAttack(actor, target);
+                    break;
+                case BaseActionType.UseItem:
+                    var item = ItemDataBase.GetItemData(itemType);
+                    BaseActionFunctions.UseItem(actor, target, itemType);
+                    break;
             }
-
-            skillData.ExecuteSkill(actionArgument);
-            return true;
         }
     }
 }

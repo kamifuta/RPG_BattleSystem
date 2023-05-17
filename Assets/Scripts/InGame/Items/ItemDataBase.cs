@@ -13,13 +13,13 @@ namespace InGame.Items
 
     public static class ItemDataBase
     {
-        private static readonly List<Item> itemList = new List<Item>()
+        private static readonly List<ItemData> itemList = new List<ItemData>()
         {
             new Herb(),
             new MagicPotion(),
         };
 
-        public static Item GetItemData(ItemType itemType)
+        public static ItemData GetItemData(ItemType itemType)
             => itemList.Single(x => x.itemType == itemType);
     }
 }

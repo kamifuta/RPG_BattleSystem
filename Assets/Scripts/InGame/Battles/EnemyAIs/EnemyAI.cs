@@ -36,7 +36,7 @@ namespace InGame.Buttles.EnemyAIs
             //NOTE: Ç∆ÇËÇ†Ç¶Ç∏çUåÇÇ∑ÇÈ
             var target = enemyAIMemory.TargetPlayer;
             var arg = new ActionArgument(targetEnemy, target);
-            return new ActionData(SkillType.NormalAttack, arg);
+            return new ActionData(BaseActionType.NormalAttack, targetEnemy, target);
         }
 
         private void ObserveAttacker()

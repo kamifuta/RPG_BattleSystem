@@ -16,6 +16,7 @@ using Log;
 using System;
 using InGame.Characters.Skills;
 using InGame.Buttles.Actions;
+using InGame.Items;
 
 namespace InGame.Buttles
 {
@@ -130,7 +131,7 @@ namespace InGame.Buttles
 
         private void ExecuteHighPriorityAction()
         {
-            var actions=playableCharacterActionManager.GetHighPriorityAction();
+            var actions = playableCharacterActionManager.GetDefenceActionPairs();
             foreach(var action in actions)
             {
                 action.Value.ExecuteAction();
@@ -146,20 +147,26 @@ namespace InGame.Buttles
                 var result = action.ExecuteAction();
                 if (!result)
                 {
-                    ActionArgument arg;
+                    BaseCharacter target;
 
-                    switch (action.skillData.targetType)
+                    switch (action.actionType)
                     {
-                        case TargetType.Self:
+                        case BaseActionType.NormalAttack:
+                            target = enemyManager.enemies.Where(x => !x.characterHealth.IsDead).RandomGet();
+                            action.ExecuteAction(target);
                             break;
-                        case TargetType.Friends:
-                            arg = new ActionArgument(character, character);
-                            action.ExecuteAction(arg);
-                            break;
-                        case TargetType.Enemy:
-                            var target = enemyManager.enemies.Where(x=>!x.characterHealth.IsDead).RandomGet();
-                            arg = new ActionArgument(character, target);
-                            action.ExecuteAction(arg);
+                        case BaseActionType.UseItem:
+                            var item = ItemDataBase.GetItemData(action.itemType);
+                            switch (item.targetType)
+                            {
+                                case TargetType.Friends:
+                                    action.ExecuteAction(character);
+                                    break;
+                                case TargetType.Enemy:
+                                    target = enemyManager.enemies.Where(x => !x.characterHealth.IsDead).RandomGet();
+                                    action.ExecuteAction(target);
+                                    break;
+                            }
                             break;
                     }
                 }
@@ -170,20 +177,26 @@ namespace InGame.Buttles
                 var result = action.ExecuteAction();
                 if (!result)
                 {
-                    ActionArgument arg;
+                    BaseCharacter target;
 
-                    switch (action.skillData.targetType)
+                    switch (action.actionType)
                     {
-                        case TargetType.Self:
+                        case BaseActionType.NormalAttack:
+                            target = partyManager.partyCharacters.Where(x => !x.characterHealth.IsDead).RandomGet();
+                            action.ExecuteAction(target);
                             break;
-                        case TargetType.Friends:
-                            arg = new ActionArgument(character, character);
-                            action.ExecuteAction(arg);
-                            break;
-                        case TargetType.Enemy:
-                            var target = partyManager.partyCharacters.Where(x => !x.characterHealth.IsDead).RandomGet();
-                            arg = new ActionArgument(character, target);
-                            action.ExecuteAction(arg);
+                        case BaseActionType.UseItem:
+                            var item = ItemDataBase.GetItemData(action.itemType);
+                            switch (item.targetType)
+                            {
+                                case TargetType.Friends:
+                                    action.ExecuteAction(character);
+                                    break;
+                                case TargetType.Enemy:
+                                    target = partyManager.partyCharacters.Where(x => !x.characterHealth.IsDead).RandomGet();
+                                    action.ExecuteAction(target);
+                                    break;
+                            }
                             break;
                     }
                 }

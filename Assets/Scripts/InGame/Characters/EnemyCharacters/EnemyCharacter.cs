@@ -21,7 +21,7 @@ namespace InGame.Characters.Enemies
         public override void ApplyDamage(Damage damage)
         {
             base.ApplyDamage(damage);
-            attackerSubject.OnNext(damage.Attacker as PlayableCharacter);
+            attackerSubject.OnNext(damage.attacker as PlayableCharacter);
         }
     }
 }

@@ -2,13 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace InGame.Characters
+namespace InGame.Buttles.Actions
 {
-    public enum ActionType
+    public enum BaseActionType
     {
         NormalAttack,
-        UseSkill,
         Defence,
+        UseItem,
+        UseSkill,
+        UseMagic,
     }
 }
-

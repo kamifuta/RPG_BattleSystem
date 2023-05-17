@@ -14,18 +14,16 @@ namespace InGame.Damages
 
     public class Damage
     {
-        private readonly BaseCharacter attacker;
-        private readonly DamageType damageType;
+        public BaseCharacter attacker { get; }
+        public int attackValue { get; }
+        public DamageType damageType { get; }
 
-        public Damage(BaseCharacter attacker, DamageType damageType)
+        public Damage(BaseCharacter attacker, int attackValue, DamageType damageType)
         {
             this.attacker = attacker;
+            this.attackValue = attackValue;
             this.damageType = damageType;
         }
-
-        public BaseCharacter Attacker => attacker;
-        public int AttackValue => attacker.characterStatus.AttackValue;
-        public DamageType DamageType => damageType;
     }
 }
 
