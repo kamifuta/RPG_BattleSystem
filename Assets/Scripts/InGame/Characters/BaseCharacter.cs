@@ -48,7 +48,12 @@ namespace InGame.Characters
 
         public void Heal(Healing healing)
         {
+            if(healing.HealHPValue>0)
+                LogWriter.WriteLog($"{characterName}‚ÌHP‚ª{healing.HealHPValue}‰ñ•œ‚µ‚½");
             characterHealth.Heal(healing.HealHPValue);
+
+            if(healing.HealMPValue>0)
+                LogWriter.WriteLog($"{characterName}‚ÌMP‚ª{healing.HealMPValue}‰ñ•œ‚µ‚½");
             characterMagic.HealMP(healing.HealMPValue);
         }
 
