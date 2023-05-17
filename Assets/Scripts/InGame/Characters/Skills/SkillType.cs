@@ -12,7 +12,7 @@ namespace InGame.Characters.Skills
     public enum SkillType
     {
         PowerAttack,
-        FirstAttack,
+        QuickAttack,
         LastAttack,
         BigDefence,
     }

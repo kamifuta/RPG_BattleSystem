@@ -10,6 +10,7 @@ namespace InGame.Characters.Skills
         private static readonly List<SkillData> skillDataList = new List<SkillData>()
         {
             new PowerAttack(),
+            new QuickAttack(),
         };
 
         public static IEnumerable<SkillData> GetUsableSkills(IEnumerable<SkillType> skillTypes, int currentMP)

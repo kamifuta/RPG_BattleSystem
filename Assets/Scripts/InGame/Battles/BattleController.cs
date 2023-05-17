@@ -99,6 +99,7 @@ namespace InGame.Buttles
                 LogCharacterStatus();
 
                 SelectPlayableCharactersAction();
+                ExecuteDefenceAction();
                 ExecuteHighPriorityAction();
 
                 var characters = GetSortedCharacterByAgility();
@@ -129,9 +130,19 @@ namespace InGame.Buttles
             }
         }
 
-        private void ExecuteHighPriorityAction()
+        private void ExecuteDefenceAction()
         {
             var actions = playableCharacterActionManager.GetDefenceActionPairs();
+            foreach (var action in actions)
+            {
+                action.Value.ExecuteAction();
+                action.Key.SetHadDoneAction(true);
+            }
+        }
+
+        private void ExecuteHighPriorityAction()
+        {
+            var actions = playableCharacterActionManager.GetHighPriorityActionPairs();
             foreach(var action in actions)
             {
                 action.Value.ExecuteAction();

@@ -53,10 +53,16 @@ namespace InGame.Buttles.PlayerAIs
                     ActionData action = new ActionData(BaseActionType.UseItem, character, character, ItemType.Herb);
                     playableCharacterActionManager.SetPlayableCharacterAction(character, action);
                 }
-                else
+                else if(random < 0.85f)
                 {
                     var target = enemyManager.enemies.RandomGet();
                     ActionData action = new ActionData(BaseActionType.UseSkill, character, target, SkillType.PowerAttack);
+                    playableCharacterActionManager.SetPlayableCharacterAction(character, action);
+                }
+                else
+                {
+                    var target = enemyManager.enemies.RandomGet();
+                    ActionData action = new ActionData(BaseActionType.UseSkill, character, target, SkillType.QuickAttack);
                     playableCharacterActionManager.SetPlayableCharacterAction(character, action);
                 }
             }
