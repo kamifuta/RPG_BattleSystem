@@ -1,10 +1,8 @@
+using InGame.Characters;
 using InGame.Damages;
-using Log;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace InGame.Characters.Skills
+namespace InGame.Skills
 {
     public class PowerAttack : SkillData
     {
@@ -21,7 +19,7 @@ namespace InGame.Characters.Skills
         public override void ExecuteSkill(BaseCharacter actor, BaseCharacter target)
         {
             var attackValue = Mathf.CeilToInt(actor.characterStatus.AttackValue * AttackMagnification);
-            var damage = new Damage(actor, attackValue, DamageType.HP);
+            var damage = new Damage(actor, attackValue, DamageTargetType.HP, AttackType.Physics, DamageAttributeType.None);
             target.ApplyDamage(damage);
         }
     }

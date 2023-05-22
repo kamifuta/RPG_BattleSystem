@@ -1,4 +1,4 @@
-using InGame.Characters.Skills;
+using InGame.Skills;
 using InGame.Damages;
 using InGame.Healings;
 using Log;
@@ -15,7 +15,6 @@ namespace InGame.Characters
 
         public readonly CharacterHealth characterHealth;
         public readonly CharacterMagic characterMagic;
-        public bool HadDoneAction { get; private set; } = false;
         //public List<SkillType> rememberSkills { get; private set; } = new List<SkillType>() { SkillType.NormalAttack, SkillType.Defence };
 
         public BaseCharacter(CharacterStatus characterStatus)
@@ -33,8 +32,18 @@ namespace InGame.Characters
 
         public virtual void ApplyDamage(Damage damage)
         {
-            var baseDamage = (damage.attackValue / 2) - (characterStatus.DefecnceValue / 4);
-            var damageValue = Mathf.CeilToInt(baseDamage + Random.Range(-0.16f, 0.16f) * baseDamage);
+            int baseDamageValue=0;
+            switch (damage.attackType)
+            {
+                case AttackType.Physics:
+                    baseDamageValue = (damage.attackValue / 2) - (characterStatus.DefecnceValue / 4);
+                    break;
+                case AttackType.Magic:
+                    baseDamageValue = (damage.attackValue / 2) - (characterStatus.MagicDefecnceValue / 4);
+                    break;
+            }
+
+            var damageValue = Mathf.CeilToInt(baseDamageValue + Random.Range(-0.16f, 0.16f) * baseDamageValue);
             if (damageValue < 0)
             {
                 damageValue = Random.Range(0, 2);
@@ -48,23 +57,29 @@ namespace InGame.Characters
 
         public void Heal(Healing healing)
         {
-            if(healing.HealHPValue>0)
-                LogWriter.WriteLog($"{characterName}‚ÌHP‚ª{healing.HealHPValue}‰ñ•œ‚µ‚½");
+            if (healing.HealHPValue > 0)
+            {
+                var damagedValue = characterStatus.MaxHP - characterHealth.currentHP;
+                var logValue = damagedValue > healing.HealHPValue ? healing.HealHPValue : damagedValue;
+                LogWriter.WriteLog($"{characterName}‚ÌHP‚ª{logValue}‰ñ•œ‚µ‚½");
+
+            }
             characterHealth.Heal(healing.HealHPValue);
 
-            if(healing.HealMPValue>0)
-                LogWriter.WriteLog($"{characterName}‚ÌMP‚ª{healing.HealMPValue}‰ñ•œ‚µ‚½");
+            if (healing.HealMPValue > 0)
+            {
+                var damagedValue = characterStatus.MaxMP - characterMagic.currentMP;
+                var logValue = damagedValue > healing.HealMPValue ? healing.HealMPValue : damagedValue;
+                LogWriter.WriteLog($"{characterName}‚ÌMP‚ª{logValue}‰ñ•œ‚µ‚½");
+
+            }
             characterMagic.HealMP(healing.HealMPValue);
         }
 
-        public void SetHadDoneAction(bool value)
+        public void Revaival()
         {
-            HadDoneAction = value;
-        }
-
-        public void ResetFlag()
-        {
-            HadDoneAction = false;
+            LogWriter.WriteLog($"{characterName}‚Í•œŠˆ‚µ‚½");
+            characterHealth.Heal(characterStatus.MaxHP / 3);
         }
     }
 }

@@ -1,10 +1,11 @@
 using InGame.Characters;
-using InGame.Characters.Skills;
+using InGame.Skills;
 using InGame.Items;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using InGame.Magics;
 
 namespace InGame.Buttles.Actions
 {
@@ -16,6 +17,7 @@ namespace InGame.Buttles.Actions
         private readonly BaseCharacter target;
         public readonly ItemType itemType;
         public readonly SkillType skillType;
+        public readonly MagicType magicType;
 
         private readonly ActionArgument actionArgument;
 
@@ -48,6 +50,14 @@ namespace InGame.Buttles.Actions
             this.skillType = skillType;
         }
 
+        public ActionData(BaseActionType actionType, BaseCharacter actor, BaseCharacter target, MagicType magicType)
+        {
+            this.actionType = actionType;
+            this.actor = actor;
+            this.target = target;
+            this.magicType = magicType;
+        }
+
         public bool ExecuteAction()
         {
             switch (actionType)
@@ -71,6 +81,12 @@ namespace InGame.Buttles.Actions
                     if (skill.IsTargetableDeadCharacter && target.characterHealth.IsDead)
                         return false;
                     BaseActionFunctions.UseSkill(actor, target, skillType);
+                    break;
+                case BaseActionType.UseMagic:
+                    var magic = MagicDataBase.GetMagicData(magicType);
+                    if (magic.IsTargetableDeadCharacter && target.characterHealth.IsDead)
+                        return false;
+                    BaseActionFunctions.UseMagic(actor, target, magicType);
                     break;
             }
 

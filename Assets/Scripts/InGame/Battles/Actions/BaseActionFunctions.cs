@@ -1,11 +1,12 @@
 using InGame.Characters;
-using InGame.Characters.Skills;
+using InGame.Skills;
 using InGame.Damages;
 using InGame.Items;
 using Log;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using InGame.Magics;
 
 namespace InGame.Buttles.Actions
 {
@@ -15,7 +16,7 @@ namespace InGame.Buttles.Actions
         {
             LogWriter.WriteLog($"{actor.characterName}ÇÃçUåÇ");
 
-            target.ApplyDamage(new Damage(actor, actor.characterStatus.AttackValue, DamageType.HP));
+            target.ApplyDamage(new Damage(actor, actor.characterStatus.AttackValue, DamageTargetType.HP, AttackType.Physics, DamageAttributeType.None));
         }
 
         public static void Defence(BaseCharacter actor)
@@ -41,6 +42,15 @@ namespace InGame.Buttles.Actions
             LogWriter.WriteLog($"{actor.characterName}ÇÃ{skill.skillName}");
 
             skill.ExecuteSkill(actor, target);
+        }
+
+        public static void UseMagic(BaseCharacter actor, BaseCharacter target, MagicType magicType)
+        {
+            var magic = MagicDataBase.GetMagicData(magicType);
+
+            LogWriter.WriteLog($"{actor.characterName}ÇÃ{magic.magicName}");
+
+            magic.ExecuteMagic(actor, target);
         }
     }
 }

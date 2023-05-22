@@ -1,5 +1,5 @@
 using InGame.Characters;
-using InGame.Characters.Skills;
+using InGame.Skills;
 using InGame.Healings;
 using System.Collections;
 using System.Collections.Generic;

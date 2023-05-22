@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace InGame.Characters.Skills
+namespace InGame.Skills
 {
     public enum SkillType
     {

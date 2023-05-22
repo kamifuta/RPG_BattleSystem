@@ -14,9 +14,10 @@ using VContainer;
 using Cysharp.Threading.Tasks;
 using Log;
 using System;
-using InGame.Characters.Skills;
+using InGame.Skills;
 using InGame.Buttles.Actions;
 using InGame.Items;
+using System.Threading;
 
 namespace InGame.Buttles
 {
@@ -37,6 +38,9 @@ namespace InGame.Buttles
         private PartyManager partyManager;
         private FieldManager fieldManager;
         private PlayerAI playerAI;
+
+        private List<BaseCharacter> hadDoneActionCharacterList= new List<BaseCharacter>();
+        private CancellationTokenSource cancellationTokenSource;
 
         [Inject]
         public BattleController(PartyManager partyManager, FieldManager fieldManager, PlayerAI playerAI)
@@ -89,64 +93,87 @@ namespace InGame.Buttles
 
         private void StartBattle()
         {
-            ProcessBattle().Forget();
+            cancellationTokenSource = new CancellationTokenSource();
+            ProcessBattle(cancellationTokenSource.Token).Forget();
         }
 
-        private async UniTaskVoid ProcessBattle()
+        private async UniTask ProcessBattle(CancellationToken token)
         {
             while (true)
             {
+                hadDoneActionCharacterList.Clear();
+
                 LogCharacterStatus();
 
                 SelectPlayableCharactersAction();
-                ExecuteDefenceAction();
-                ExecuteHighPriorityAction();
 
-                var characters = GetSortedCharacterByAgility();
-                foreach(var character in characters)
+                try
                 {
-                    if (character.characterHealth.IsDead)
-                        continue;
+                    //優先度の高い行動を行う
+                    await ExecuteDefenceAction(token);
+                    await ExecuteHighPriorityAction(token);
 
-                    if (character.HadDoneAction)
-                        continue;
+                    await ExecuteNormalPriorityAction(token);
 
-                    //それぞれのキャラの行動を実行する
-                    ExecuteCharacterAction(character);
-
-                    var result = CheckBattleResult();
-                    if (result != ResultType.None)
-                    {
-                        FinishBattle(result);
-                        return;
-                    }
-
-                    await UniTask.DelayFrame(1);
+                    await ExecuteLowPriorityAction(token);
                 }
-
-                ResetFlag();
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                
                 ClearCharacterBuff();
                 turnManager.NextTurn();
             }
         }
 
-        private void ExecuteDefenceAction()
+        private async UniTask ExecuteDefenceAction(CancellationToken token)
         {
-            var actions = playableCharacterActionManager.GetDefenceActionPairs();
-            foreach (var action in actions)
+            var actionPairs = playableCharacterActionManager.GetDefenceActionPairs().OrderByDescending(x=>x.Key.characterStatus.Agility);
+            foreach (var actionPair in actionPairs)
             {
-                action.Value.ExecuteAction();
-                action.Key.SetHadDoneAction(true);
+                actionPair.Value.ExecuteAction();
+                hadDoneActionCharacterList.Add(actionPair.Key);
+
+                await UniTask.DelayFrame(1, cancellationToken:token);
             }
         }
 
-        private void ExecuteHighPriorityAction()
+        private async UniTask ExecuteHighPriorityAction(CancellationToken token)
         {
-            var actions = playableCharacterActionManager.GetHighPriorityActionPairs();
-            foreach(var action in actions)
+            var characters = playableCharacterActionManager.GetHighPriorityActionCharacters().OrderByDescending(x=>x.characterStatus.Agility);
+            foreach(var character in characters)
             {
-                action.Value.ExecuteAction();
-                action.Key.SetHadDoneAction(true);
+                ExecuteCharacterAction(character);
+
+                await UniTask.DelayFrame(1, cancellationToken: token);
+            }
+        }
+
+        private async UniTask ExecuteNormalPriorityAction(CancellationToken token)
+        {
+            var players = playableCharacterActionManager.GetNormalPriorityActionCharacters();
+            var sortedCharacters= enemyManager.enemies.Where(x => !x.characterHealth.IsDead)
+                                                .Cast<BaseCharacter>()
+                                                .Concat(players)
+                                                .OrderByDescending(x => x.characterStatus.Agility);
+
+            foreach(var character in sortedCharacters)
+            {
+                ExecuteCharacterAction(character);
+
+                await UniTask.DelayFrame(1, cancellationToken: token);
+            }
+        }
+
+        private async UniTask ExecuteLowPriorityAction(CancellationToken token)
+        {
+            var characters = playableCharacterActionManager.GetLowPriorityActionCharacters().OrderByDescending(x => x.characterStatus.Agility);
+            foreach (var character in characters)
+            {
+                ExecuteCharacterAction(character);
+
+                await UniTask.DelayFrame(1, cancellationToken: token);
             }
         }
 
@@ -154,76 +181,78 @@ namespace InGame.Buttles
         {
             if(character is PlayableCharacter)
             {
-                var action = playableCharacterActionManager.GetCharacterAction(character as PlayableCharacter);
-                var result = action.ExecuteAction();
+                var actionData = playableCharacterActionManager.GetCharacterActionData(character as PlayableCharacter);
+                var result = actionData.ExecuteAction();
                 if (!result)
                 {
-                    BaseCharacter target;
-
-                    switch (action.actionType)
+                    BaseCharacter target = Retarget(actionData, enemyManager.enemies);
+                    if (target == null)
                     {
-                        case BaseActionType.NormalAttack:
-                            target = enemyManager.enemies.Where(x => !x.characterHealth.IsDead).RandomGet();
-                            action.ExecuteAction(target);
-                            break;
-                        case BaseActionType.UseItem:
-                            var item = ItemDataBase.GetItemData(action.itemType);
-                            switch (item.targetType)
-                            {
-                                case TargetType.Friends:
-                                    action.ExecuteAction(character);
-                                    break;
-                                case TargetType.Enemy:
-                                    target = enemyManager.enemies.Where(x => !x.characterHealth.IsDead).RandomGet();
-                                    action.ExecuteAction(target);
-                                    break;
-                            }
-                            break;
+                        actionData.ExecuteAction(character);
+                    }
+                    else
+                    {
+                        actionData.ExecuteAction(target);
                     }
                 }
             }
             else if(character is EnemyCharacter)
             {
-                var action = enemyManager.GetEnemyAI(character as EnemyCharacter).SelectAction();
-                var result = action.ExecuteAction();
+                var actionData = enemyManager.GetEnemyAI(character as EnemyCharacter).SelectAction();
+                var result = actionData.ExecuteAction();
                 if (!result)
                 {
-                    BaseCharacter target;
-
-                    switch (action.actionType)
+                    BaseCharacter target = Retarget(actionData, partyManager.partyCharacters);
+                    if (target == null)
                     {
-                        case BaseActionType.NormalAttack:
-                            target = partyManager.partyCharacters.Where(x => !x.characterHealth.IsDead).RandomGet();
-                            action.ExecuteAction(target);
-                            break;
-                        case BaseActionType.UseItem:
-                            var item = ItemDataBase.GetItemData(action.itemType);
-                            switch (item.targetType)
-                            {
-                                case TargetType.Friends:
-                                    action.ExecuteAction(character);
-                                    break;
-                                case TargetType.Enemy:
-                                    target = partyManager.partyCharacters.Where(x => !x.characterHealth.IsDead).RandomGet();
-                                    action.ExecuteAction(target);
-                                    break;
-                            }
-                            break;
+                        actionData.ExecuteAction(character);
+                    }
+                    else
+                    {
+                        actionData.ExecuteAction(target);
                     }
                 }
             }
-            character.SetHadDoneAction(true);
+            hadDoneActionCharacterList.Add(character);
+
+            CheckBattleResult();
         }
 
-        private ResultType CheckBattleResult()
+        private BaseCharacter Retarget(ActionData actionData, IEnumerable<BaseCharacter> targetGroup)
+        {
+            switch (actionData.actionType)
+            {
+                case BaseActionType.NormalAttack:
+                    return targetGroup.Where(x => !x.characterHealth.IsDead).RandomGet();
+                case BaseActionType.UseItem:
+                    var item = ItemDataBase.GetItemData(actionData.itemType);
+                    switch (item.targetType)
+                    {
+                        case TargetType.Friends:
+                            return null;
+                        case TargetType.Enemy:
+                            return targetGroup.Where(x => !x.characterHealth.IsDead).RandomGet();
+                    }
+                    break;
+                case BaseActionType.UseSkill:
+                    break;
+            }
+            return null;
+        }
+
+        private void CheckBattleResult()
         {
             if (enemyManager.enemies.All(x => x.characterHealth.IsDead))
-                return ResultType.Win;
+            {
+                FinishBattle(ResultType.Win);
+                return;
+            }
 
             if (partyManager.partyCharacters.All(x => x.characterHealth.IsDead))
-                return ResultType.Lose;
-
-            return ResultType.None;
+            {
+                FinishBattle(ResultType.Lose);
+                return;
+            }
         }
 
         private void ClearCharacterBuff()
@@ -234,23 +263,18 @@ namespace InGame.Buttles
             }
         }
 
-        private void ResetFlag()
-        {
-            foreach (var character in AllCharacters)
-            {
-                character.ResetFlag();
-            }
-        }
-
         private void FinishBattle(ResultType result)
         {
+            cancellationTokenSource?.Cancel();
+            cancellationTokenSource = null;
+
             switch (result)
             {
                 case ResultType.Win:
-                    LogWriter.WriteLog($"勝利");
+                    LogWriter.WriteLog($"\n勝利");
                     break;
                 case ResultType.Lose:
-                    LogWriter.WriteLog($"負け");
+                    LogWriter.WriteLog($"\n負け");
                     break;
             }
 
@@ -288,6 +312,7 @@ namespace InGame.Buttles
 
         public void Dispose()
         {
+            cancellationTokenSource?.Cancel();
             enemyManager.Dispose();
         }
     }

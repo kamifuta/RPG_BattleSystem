@@ -1,11 +1,12 @@
 using InGame.Buttles.Actions;
+using InGame.Characters;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace InGame.Characters.Skills
+namespace InGame.Skills
 {
     public enum TargetType
     {

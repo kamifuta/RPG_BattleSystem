@@ -8,7 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
-using InGame.Characters.Skills;
+using InGame.Skills;
 using InGame.Buttles.Actions;
 
 namespace InGame.Buttles.EnemyAIs

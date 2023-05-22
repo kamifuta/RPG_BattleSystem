@@ -2,35 +2,37 @@ using InGame.Characters;
 using InGame.Skills;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 
-namespace InGame.Items
+namespace InGame.Magics
 {
-    public abstract class ItemData
+    public abstract class MagicData
     {
-        public abstract string itemName { get; }
-        public abstract string itemExplane { get; }
-        public abstract ItemType itemType { get; }
+        public abstract MagicType magicType { get; }
+        public abstract string magicName { get; }
+        public abstract string magicExplane { get; }
+        public abstract int consumeMP { get; }
         public abstract TargetType targetType { get; }
+        public abstract int priority { get; }
         public abstract bool IsTargetableDeadCharacter { get; }
 
-        public virtual void ExecuteEffect(BaseCharacter target)
+        public virtual void ExecuteMagic(BaseCharacter actor, BaseCharacter target)
         {
             //具体的な内容は子クラスで実装
         }
 
-        public virtual void ExecuteEffect(IEnumerable<BaseCharacter> targets)
+        public virtual void ExecuteMagic(BaseCharacter actor, IEnumerable<BaseCharacter> targets)
         {
             if (!IsTargetableAnyCharacter)
             {
                 if (targets.Count() == 1)
                 {
-                    ExecuteEffect(targets.Single());
+                    ExecuteMagic(actor, targets.Single());
                 }
                 else
                 {
-                    Debug.LogError($"{itemName}は複数のキャラをターゲットにすることはできません");
+                    Debug.LogError($"{magicName}は複数のキャラをターゲットにすることはできません");
                 }
             }
 
