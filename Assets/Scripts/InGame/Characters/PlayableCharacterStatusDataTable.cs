@@ -16,14 +16,18 @@ namespace InGame.Characters
         {
             [SerializeField] private PlayableCharacterType playableCharacterType;
             [SerializeField] private CharacterStatusData characterStatusData;
+            [SerializeField] private CharacterSkillList characterSkillList;
 
             public PlayableCharacterType PlayableCharacterType => playableCharacterType;
             public CharacterStatusData CharacterStatusData => characterStatusData;
+            public CharacterSkillList CharacterSkillList => characterSkillList;
         }
 
         [SerializeField] private List<PlayableCharacterStatusData> playableCharacterStatusDatas;
         public CharacterStatusData GetStatusData(PlayableCharacterType playableCharacterType)
             => playableCharacterStatusDatas.Single(x => x.PlayableCharacterType==playableCharacterType).CharacterStatusData;
+        public CharacterSkillList GetSkillList(PlayableCharacterType playableCharacterType)
+            => playableCharacterStatusDatas.Single(x => x.PlayableCharacterType == playableCharacterType).CharacterSkillList;
     }
 }
 

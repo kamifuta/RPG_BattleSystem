@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45e5f0de7bcb1bb498c9a8241e45a047, type: 3}
   m_Name: GolemStatusData
   m_EditorClassIdentifier: 
-  maxHP_min: 1500
-  maxHP_max: 2000
+  maxHP_min: 1800
+  maxHP_max: 2500
   maxMP_min: 800
   maxMP_max: 1000
   attackValue_min: 200
-  attackValue_max: 300
+  attackValue_max: 350
   magicValue_min: 100
   magicValue_max: 200
   defenceValue_min: 150

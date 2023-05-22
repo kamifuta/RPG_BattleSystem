@@ -37,7 +37,50 @@ namespace InGame.Parties
         {
             var statusData = statusDataTable.GetStatusData(type);
             var status = new CharacterStatus(statusData);
-            return new PlayableCharacter(status);
+
+            var character= new PlayableCharacter(status);
+
+            var skillList = statusDataTable.GetSkillList(type);
+            foreach(var skill in skillList.MustSkills)
+            {
+                character.AddSkill(skill);
+            }
+
+            foreach (var skill in skillList.Skills)
+            {
+                if (UnityEngine.Random.value < 0.5f)
+                    continue;
+                character.AddSkill(skill);
+            }
+
+            foreach (var magic in skillList.MustMagics)
+            {
+                character.AddMagic(magic);
+            }
+
+            foreach (var magic in skillList.Magics)
+            {
+                if (UnityEngine.Random.value < 0.5f)
+                    continue;
+                character.AddMagic(magic);
+            }
+
+            return character;
+        }
+
+        public void ResetParty()
+        {
+            partyCharacters[0] = CreatePlayableCharacter(PlayableCharacterType.Warrior);
+            partyCharacters[0].SetCharacterName($"íŽm");
+
+            partyCharacters[1] = CreatePlayableCharacter(PlayableCharacterType.Priest);
+            partyCharacters[1].SetCharacterName($"‘m—µ");
+
+            partyCharacters[2] = CreatePlayableCharacter(PlayableCharacterType.Mage);
+            partyCharacters[2].SetCharacterName($"–‚–@Žg‚¢");
+
+            partyCharacters[3] = CreatePlayableCharacter(PlayableCharacterType.MartialArtist);
+            partyCharacters[3].SetCharacterName($"•“¬‰Æ");
         }
     }
 }

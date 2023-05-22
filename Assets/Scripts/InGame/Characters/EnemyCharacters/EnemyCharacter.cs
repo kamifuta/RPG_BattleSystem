@@ -10,8 +10,8 @@ namespace InGame.Characters.Enemies
 {
     public class EnemyCharacter : BaseCharacter
     {
-        private ISubject<PlayableCharacter> attackerSubject = new Subject<PlayableCharacter>();
-        public IObservable<PlayableCharacter> AttackerObservable => attackerSubject;
+        private ISubject<(PlayableCharacter, int)> attackerSubject = new Subject<(PlayableCharacter, int)>();
+        public IObservable<(PlayableCharacter, int)> AttackerObservable => attackerSubject;
 
         public EnemyCharacter(CharacterStatus characterStatus) : base(characterStatus)
         {
@@ -21,7 +21,7 @@ namespace InGame.Characters.Enemies
         public override void ApplyDamage(Damage damage)
         {
             base.ApplyDamage(damage);
-            attackerSubject.OnNext(damage.attacker as PlayableCharacter);
+            attackerSubject.OnNext((damage.attacker as PlayableCharacter, CalcDamage(damage)));
         }
     }
 }

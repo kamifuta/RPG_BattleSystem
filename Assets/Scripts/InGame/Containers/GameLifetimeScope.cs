@@ -19,7 +19,7 @@ namespace InGame.Containers
 
             builder.Register<FieldManager>(Lifetime.Singleton);
             builder.Register<PartyManager>(Lifetime.Singleton);
-            builder.Register<PlayerAI,OnlyNormalAttackAI>(Lifetime.Singleton);
+            builder.Register<PlayerAI, NormalAttackAndDefenceAI>(Lifetime.Singleton);
 
             builder.RegisterComponent(encountView);
         }

@@ -8,6 +8,10 @@ using VContainer;
 
 namespace InGame.Buttles.PlayerAIs
 {
+    /// <summary>
+    /// 通常攻撃しかしないAI
+    /// ターゲットはランダム
+    /// </summary>
     public class OnlyNormalAttackAI : PlayerAI
     {
         [Inject]
@@ -20,6 +24,9 @@ namespace InGame.Buttles.PlayerAIs
         {
             foreach(var player in partyManager.partyCharacters)
             {
+                if (player.characterHealth.IsDead)
+                    continue;
+
                 var target = enemyManager.enemies.RandomGet();
                 var action = new ActionData(BaseActionType.NormalAttack, player, target);
                 playableCharacterActionManager.SetPlayableCharacterAction(player, action);

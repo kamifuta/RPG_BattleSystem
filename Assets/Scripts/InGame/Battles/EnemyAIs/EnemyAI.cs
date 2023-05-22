@@ -10,6 +10,7 @@ using UnityEngine;
 using UniRx;
 using InGame.Skills;
 using InGame.Buttles.Actions;
+using InGame.Characters.PlayableCharacters;
 
 namespace InGame.Buttles.EnemyAIs
 {
@@ -42,10 +43,11 @@ namespace InGame.Buttles.EnemyAIs
         private void ObserveAttacker()
         {
             var disposable=targetEnemy.AttackerObservable
-                .Where(x => x != null)
-                .Subscribe(player =>
+                .Where(x => x.Item1 != null)
+                .Subscribe(damage =>
                 {
-                    enemyAIMemory.AddHate(player, 1);
+                    var rate = (float)damage.Item2 / targetEnemy.characterStatus.MaxHP;
+                    enemyAIMemory.AddHate(damage.Item1, rate);
                 });
 
             disposables.Add(disposable);

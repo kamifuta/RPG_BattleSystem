@@ -8,16 +8,16 @@ namespace InGame.Buttles.EnemyAIs
 {
     public class EnemyAIMemory
     {
-        private readonly Dictionary<PlayableCharacter, int> hateDic;
+        private readonly Dictionary<PlayableCharacter, float> hateDic;
 
         public PlayableCharacter TargetPlayer => hateDic.Where(t=>!t.Key.characterHealth.IsDead).OrderByDescending(x => x.Value).First().Key;
 
         public EnemyAIMemory(IEnumerable<PlayableCharacter> partyCharacters)
         {
-            hateDic = partyCharacters.ToDictionary(x => x, _ => 0);
+            hateDic = partyCharacters.ToDictionary(x => x, _ => 0f);
         }
 
-        public void AddHate(PlayableCharacter player, int hateValue)
+        public void AddHate(PlayableCharacter player, float hateValue)
         {
             hateDic[player] += hateValue;
         }

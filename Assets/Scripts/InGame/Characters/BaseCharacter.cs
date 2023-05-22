@@ -5,6 +5,7 @@ using Log;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using InGame.Magics;
 
 namespace InGame.Characters
 {
@@ -15,7 +16,8 @@ namespace InGame.Characters
 
         public readonly CharacterHealth characterHealth;
         public readonly CharacterMagic characterMagic;
-        //public List<SkillType> rememberSkills { get; private set; } = new List<SkillType>() { SkillType.NormalAttack, SkillType.Defence };
+        public List<SkillType> rememberSkills { get; private set; } = new List<SkillType>();
+        public List<MagicType> rememberMagics { get; private set; } = new List<MagicType>();
 
         public BaseCharacter(CharacterStatus characterStatus)
         {
@@ -30,9 +32,29 @@ namespace InGame.Characters
             this.characterName = characterName;
         }
 
+        public void AddSkill(SkillType skillType)
+        {
+            rememberSkills.Add(skillType);
+        }
+
+        public void AddMagic(MagicType magicType)
+        {
+            rememberMagics.Add(magicType);
+        }
+
         public virtual void ApplyDamage(Damage damage)
         {
-            int baseDamageValue=0;
+            var damageValue = CalcDamage(damage);
+            characterHealth.ApplyDamage(damageValue);
+            LogWriter.WriteLog($"{characterName}に{damageValue}のダメージ");
+
+            if(characterHealth.IsDead)
+                LogWriter.WriteLog($"{characterName}は倒れた");
+        }
+
+        protected int CalcDamage(Damage damage)
+        {
+            int baseDamageValue = 0;
             switch (damage.attackType)
             {
                 case AttackType.Physics:
@@ -48,11 +70,8 @@ namespace InGame.Characters
             {
                 damageValue = Random.Range(0, 2);
             }
-            characterHealth.ApplyDamage(damageValue);
-            LogWriter.WriteLog($"{characterName}に{damageValue}のダメージ");
 
-            if(characterHealth.IsDead)
-                LogWriter.WriteLog($"{characterName}は倒れた");
+            return damageValue;
         }
 
         public void Heal(Healing healing)

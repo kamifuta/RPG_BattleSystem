@@ -70,6 +70,7 @@ namespace InGame.Buttles
 
                     //ƒtƒB[ƒ‹ƒh‚Ì¶¬
                     GenerateEnemies(enemyType);
+                    LogCharacterStatus();
                     turnManager.StartTurn();
                     
                     StartBattle();
@@ -103,7 +104,7 @@ namespace InGame.Buttles
             {
                 hadDoneActionCharacterList.Clear();
 
-                LogCharacterStatus();
+                LogCharacterHPAndMP();
 
                 SelectPlayableCharactersAction();
 
@@ -282,13 +283,9 @@ namespace InGame.Buttles
 
             Debug.Log("Finish Battle");
             LogCharacterStatus();
-        }
 
-        private IEnumerable<BaseCharacter> GetSortedCharacterByAgility()
-            => enemyManager.enemies.Where(x=>!x.characterHealth.IsDead)
-                .Cast<BaseCharacter>()
-                .Concat(partyManager.partyCharacters)
-                .OrderByDescending(x => x.characterStatus.Agility);
+            partyManager.ResetParty();
+        }
 
         private IEnumerable<BaseCharacter> AllCharacters
             => enemyManager.enemies.Cast<BaseCharacter>().Concat(partyManager.partyCharacters);
@@ -299,7 +296,8 @@ namespace InGame.Buttles
             foreach(var character in partyManager.partyCharacters)
             {
                 LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP}/{character.characterStatus.MaxHP} MP{character.characterMagic.currentMP}/{character.characterStatus.MaxMP} " +
-                    $"UŒ‚—Í{character.characterStatus.AttackValue} –‚—Í{character.characterStatus.MagicValue} –hŒä—Í{character.characterStatus.DefecnceValue} –‚–@–hŒä—Í{character.characterStatus.MagicDefecnceValue} ‘f‘‚³{character.characterStatus.Agility}");
+                    $"UŒ‚—Í{character.characterStatus.AttackValue} –‚—Í{character.characterStatus.MagicValue} –hŒä—Í{character.characterStatus.DefecnceValue} –‚–@–hŒä—Í{character.characterStatus.MagicDefecnceValue} ‘f‘‚³{character.characterStatus.Agility}" +
+                    $"ƒXƒLƒ‹({character.rememberSkills.Enumerate()}) –‚–@({character.rememberMagics.Enumerate()})");
             }
             LogWriter.WriteLog($"------------------------------------");
 
@@ -308,6 +306,23 @@ namespace InGame.Buttles
             {
                 LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP}/{enemy.characterStatus.MaxHP} MP{enemy.characterMagic.currentMP}/{enemy.characterStatus.MaxMP} " +
                     $"UŒ‚—Í{enemy.characterStatus.AttackValue} –‚—Í{enemy.characterStatus.MagicValue} –hŒä—Í{enemy.characterStatus.DefecnceValue} –‚–@–hŒä—Í{enemy.characterStatus.MagicDefecnceValue} ‘f‘‚³{enemy.characterStatus.Agility}");
+            }
+            LogWriter.WriteLog($"------------------------------------");
+        }
+
+        private void LogCharacterHPAndMP()
+        {
+            LogWriter.WriteLog($"–¡•û‚ÌƒXƒe[ƒ^ƒX--------------------");
+            foreach (var character in partyManager.partyCharacters)
+            {
+                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP}/{character.characterStatus.MaxHP} MP{character.characterMagic.currentMP}/{character.characterStatus.MaxMP}");
+            }
+            LogWriter.WriteLog($"------------------------------------");
+
+            LogWriter.WriteLog($"“G‚ÌƒXƒe[ƒ^ƒX--------------------");
+            foreach (var enemy in enemyManager.enemies)
+            {
+                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP}/{enemy.characterStatus.MaxHP} MP{enemy.characterMagic.currentMP}/{enemy.characterStatus.MaxMP}");
             }
             LogWriter.WriteLog($"------------------------------------");
         }
