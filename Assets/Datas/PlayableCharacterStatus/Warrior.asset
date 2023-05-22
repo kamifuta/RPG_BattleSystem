@@ -12,10 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45e5f0de7bcb1bb498c9a8241e45a047, type: 3}
   m_Name: Warrior
   m_EditorClassIdentifier: 
-  maxHP: 400
-  maxMP: 100
-  attackValue: 150
-  magicValue: 50
-  defenceValue: 200
-  magicDefenceValue: 150
-  agility: 50
+  maxHP_min: 300
+  maxHP_max: 500
+  maxMP_min: 50
+  maxMP_max: 70
+  attackValue_min: 200
+  attackValue_max: 350
+  magicValue_min: 50
+  magicValue_max: 100
+  defenceValue_min: 200
+  defenceValue_max: 400
+  magicDefenceValue_min: 150
+  magicDefenceValue_max: 350
+  agility_min: 50
+  agility_max: 120

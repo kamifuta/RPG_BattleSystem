@@ -12,10 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45e5f0de7bcb1bb498c9a8241e45a047, type: 3}
   m_Name: MartialArtist
   m_EditorClassIdentifier: 
-  maxHP: 300
-  maxMP: 50
-  attackValue: 125
-  magicValue: 10
-  defenceValue: 100
-  magicDefenceValue: 80
-  agility: 150
+  maxHP_min: 250
+  maxHP_max: 350
+  maxMP_min: 50
+  maxMP_max: 90
+  attackValue_min: 250
+  attackValue_max: 400
+  magicValue_min: 20
+  magicValue_max: 50
+  defenceValue_min: 120
+  defenceValue_max: 200
+  magicDefenceValue_min: 50
+  magicDefenceValue_max: 150
+  agility_min: 100
+  agility_max: 200

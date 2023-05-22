@@ -298,14 +298,16 @@ namespace InGame.Buttles
             LogWriter.WriteLog($"–¡•û‚ÌƒXƒe[ƒ^ƒX--------------------");
             foreach(var character in partyManager.partyCharacters)
             {
-                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP}/{character.characterStatus.MaxHP}");
+                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP}/{character.characterStatus.MaxHP} MP{character.characterMagic.currentMP}/{character.characterStatus.MaxMP} " +
+                    $"UŒ‚—Í{character.characterStatus.AttackValue} –‚—Í{character.characterStatus.MagicValue} –hŒä—Í{character.characterStatus.DefecnceValue} –‚–@–hŒä—Í{character.characterStatus.MagicDefecnceValue} ‘f‘‚³{character.characterStatus.Agility}");
             }
             LogWriter.WriteLog($"------------------------------------");
 
             LogWriter.WriteLog($"“G‚ÌƒXƒe[ƒ^ƒX--------------------");
             foreach(var enemy in enemyManager.enemies)
             {
-                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP}/{enemy.characterStatus.MaxHP}");
+                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP}/{enemy.characterStatus.MaxHP} MP{enemy.characterMagic.currentMP}/{enemy.characterStatus.MaxMP} " +
+                    $"UŒ‚—Í{enemy.characterStatus.AttackValue} –‚—Í{enemy.characterStatus.MagicValue} –hŒä—Í{enemy.characterStatus.DefecnceValue} –‚–@–hŒä—Í{enemy.characterStatus.MagicDefecnceValue} ‘f‘‚³{enemy.characterStatus.Agility}");
             }
             LogWriter.WriteLog($"------------------------------------");
         }
@@ -313,7 +315,7 @@ namespace InGame.Buttles
         public void Dispose()
         {
             cancellationTokenSource?.Cancel();
-            enemyManager.Dispose();
+            enemyManager?.Dispose();
         }
     }
 }

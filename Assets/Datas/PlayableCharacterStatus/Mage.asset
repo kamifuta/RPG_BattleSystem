@@ -12,10 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45e5f0de7bcb1bb498c9a8241e45a047, type: 3}
   m_Name: Mage
   m_EditorClassIdentifier: 
-  maxHP: 300
-  maxMP: 350
-  attackValue: 30
-  magicValue: 150
-  defenceValue: 80
-  magicDefenceValue: 125
-  agility: 80
+  maxHP_min: 200
+  maxHP_max: 300
+  maxMP_min: 300
+  maxMP_max: 400
+  attackValue_min: 80
+  attackValue_max: 120
+  magicValue_min: 250
+  magicValue_max: 450
+  defenceValue_min: 50
+  defenceValue_max: 150
+  magicDefenceValue_min: 200
+  magicDefenceValue_max: 300
+  agility_min: 100
+  agility_max: 150

@@ -12,10 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45e5f0de7bcb1bb498c9a8241e45a047, type: 3}
   m_Name: Priest
   m_EditorClassIdentifier: 
-  maxHP: 350
-  maxMP: 300
-  attackValue: 50
-  magicValue: 200
-  defenceValue: 120
-  magicDefenceValue: 85
-  agility: 100
+  maxHP_min: 200
+  maxHP_max: 450
+  maxMP_min: 200
+  maxMP_max: 400
+  attackValue_min: 70
+  attackValue_max: 130
+  magicValue_min: 150
+  magicValue_max: 300
+  defenceValue_min: 100
+  defenceValue_max: 150
+  magicDefenceValue_min: 150
+  magicDefenceValue_max: 250
+  agility_min: 50
+  agility_max: 150

@@ -31,8 +31,8 @@ namespace InGame.Characters
         public int MaxMP => baseMaxMP;
         public int AttackValue => baseAttackValue;
         public int MagicValue => baseMagicValue;
-        public int DefecnceValue => baseDefenceValue * (Convert.ToInt32(characterBuff.IsDefencing) * 2);
-        public int MagicDefecnceValue => baseMagicDefenceValue * (Convert.ToInt32(characterBuff.IsDefencing) * 2);
+        public int DefecnceValue => baseDefenceValue * (1 + Convert.ToInt32(characterBuff.IsDefencing));
+        public int MagicDefecnceValue => baseMagicDefenceValue * (1 + Convert.ToInt32(characterBuff.IsDefencing));
         public int Agility => baseAgility;
 
         public CharacterStatus(CharacterStatusData statusData)
