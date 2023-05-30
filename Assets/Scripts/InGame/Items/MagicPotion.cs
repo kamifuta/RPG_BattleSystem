@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Log;
 
 namespace InGame.Items
 {
@@ -14,12 +15,18 @@ namespace InGame.Items
         public override string itemExplane => "MP‚ð­‚µ‰ñ•œ‚³‚¹‚é";
         public override ItemType itemType => ItemType.MagicPotion;
         public override TargetType targetType => TargetType.Friends;
-        public override bool IsTargetableDeadCharacter => false;
+        //public override bool IsTargetableDeadCharacter => false;
 
         private const int healingValue = 60;
 
         public override void ExecuteEffect(BaseCharacter target)
         {
+            if (target.characterHealth.IsDead)
+            {
+                LogWriter.WriteLog("‚µ‚©‚µ‰½‚à‹N‚±‚ç‚È‚©‚Á‚½");
+                return;
+            }
+
             var healing = new Healing(0, healingValue);
             target.Heal(healing);
         }

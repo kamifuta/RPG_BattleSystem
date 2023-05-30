@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using InGame.Magics;
+using InGame.Characters.PlayableCharacters;
 
 namespace InGame.Buttles.Actions
 {
@@ -33,6 +34,7 @@ namespace InGame.Buttles.Actions
             LogWriter.WriteLog($"{actor.characterName}‚Í{item.itemName}‚ðŽg—p‚µ‚½");
             
             item.ExecuteEffect(target);
+            (actor as PlayableCharacter).RemoveItem(itemType);
         }
 
         public static void UseSkill(BaseCharacter actor, BaseCharacter target, SkillType skillType)

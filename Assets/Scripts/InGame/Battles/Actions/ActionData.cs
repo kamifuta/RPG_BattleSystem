@@ -72,20 +72,14 @@ namespace InGame.Buttles.Actions
                     break;
                 case BaseActionType.UseItem:
                     var item = ItemDataBase.GetItemData(itemType);
-                    if (!item.IsTargetableDeadCharacter && target.characterHealth.IsDead)
-                        return false;
                     BaseActionFunctions.UseItem(actor, target, itemType);
                     break;
                 case BaseActionType.UseSkill:
                     var skill = SkillDataBase.GetSkillData(skillType);
-                    if (skill.IsTargetableDeadCharacter && target.characterHealth.IsDead)
-                        return false;
                     BaseActionFunctions.UseSkill(actor, target, skillType);
                     break;
                 case BaseActionType.UseMagic:
                     var magic = MagicDataBase.GetMagicData(magicType);
-                    if (magic.IsTargetableDeadCharacter && target.characterHealth.IsDead)
-                        return false;
                     BaseActionFunctions.UseMagic(actor, target, magicType);
                     break;
             }

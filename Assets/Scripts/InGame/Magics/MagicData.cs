@@ -15,7 +15,7 @@ namespace InGame.Magics
         public abstract int consumeMP { get; }
         public abstract TargetType targetType { get; }
         public abstract int priority { get; }
-        public abstract bool IsTargetableDeadCharacter { get; }
+        //public abstract bool IsTargetableDeadCharacter { get; }
 
         public virtual void ExecuteMagic(BaseCharacter actor, BaseCharacter target)
         {

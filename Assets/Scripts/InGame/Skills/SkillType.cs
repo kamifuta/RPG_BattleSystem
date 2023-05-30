@@ -13,8 +13,8 @@ namespace InGame.Skills
     {
         PowerAttack,
         QuickAttack,
-        LastAttack,
-        BigDefence,
+        //LastAttack,
+        //BigDefence,
     }
 }
 

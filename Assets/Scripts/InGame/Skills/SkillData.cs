@@ -25,7 +25,7 @@ namespace InGame.Skills
         public abstract int consumeMP { get; }
         public abstract TargetType targetType { get; }
         public abstract int priority { get; }
-        public abstract bool IsTargetableDeadCharacter { get; }
+        //public abstract bool IsTargetableDeadCharacter { get; }
 
         public virtual void ExecuteSkill(BaseCharacter actor, BaseCharacter target)
         {

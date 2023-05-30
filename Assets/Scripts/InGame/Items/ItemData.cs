@@ -13,7 +13,7 @@ namespace InGame.Items
         public abstract string itemExplane { get; }
         public abstract ItemType itemType { get; }
         public abstract TargetType targetType { get; }
-        public abstract bool IsTargetableDeadCharacter { get; }
+        //public abstract bool IsTargetableDeadCharacter { get; }
 
         public virtual void ExecuteEffect(BaseCharacter target)
         {

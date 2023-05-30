@@ -14,14 +14,15 @@ namespace InGame.Buttles
         private EnemyStatusDataTable enemyStatusDataTable;
         private PartyManager partyManager;
 
-        public EnemyFactory(PartyManager partyManager)
+        public EnemyFactory(PartyManager partyManager, EnemyStatusDataTable enemyStatusDataTable)
         {
             this.partyManager = partyManager;
+            this.enemyStatusDataTable = enemyStatusDataTable;
 
-            Addressables.LoadAssetAsync<EnemyStatusDataTable>("EnemyStatusDataTable").Completed += hundler =>
-            {
-                enemyStatusDataTable = hundler.Result;
-            };
+            //Addressables.LoadAssetAsync<EnemyStatusDataTable>("EnemyStatusDataTable").Completed += hundler =>
+            //{
+            //    enemyStatusDataTable = hundler.Result;
+            //};
         }
 
         public EnemyCharacter CreateEnemyCharacter(EnemyType enemyType)

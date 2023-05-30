@@ -1,3 +1,5 @@
+using System;
+using UniRx;
 using UnityEngine;
 
 namespace InGame.Characters
@@ -9,6 +11,9 @@ namespace InGame.Characters
         public bool IsDead => currentHP <= 0;
 
         private readonly int MaxHP;
+
+        private readonly ISubject<int> healValueSubject = new Subject<int>();
+        public IObservable<int> HealValueObservable => healValueSubject;
 
         public CharacterHealth(int maxHP)
         {
@@ -26,6 +31,8 @@ namespace InGame.Characters
         {
             currentHP += value;
             currentHP = Mathf.Clamp(currentHP, 0, MaxHP);
+
+            healValueSubject.OnNext(value);
         }
     }
 }

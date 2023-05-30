@@ -11,6 +11,7 @@ namespace InGame.Magics
         {
             new MagicMissile(),
             new HealMagic(),
+            new RevivalMagic(),
         };
 
         public static IEnumerable<MagicData> GetUsableMagics(IEnumerable<MagicType> skillTypes, int currentMP)

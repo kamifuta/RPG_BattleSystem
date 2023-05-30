@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca30402386e538340a2e8d00bd7a944d, type: 3}
   m_Name: WarriorSkillList
   m_EditorClassIdentifier: 
-  mustSkills: 0000000002000000
-  skills: 0100000003000000
+  mustSkills: 00000000
+  skills: 01000000
   mustMagics: 01000000
   magics: 00000000

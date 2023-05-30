@@ -47,7 +47,7 @@ namespace InGame.Buttles
             var normalPriorityActionPlayer= playableCharacterActionDic
                                                 .Where(x => x.Value.actionType == BaseActionType.UseSkill)
                                                 .Where(x => SkillDataBase.GetSkillData(x.Value.skillType).priority == 0).Select(x => x.Key);
-
+            
             return normalAttackPlayer.Union(useItemPlayer).Union(useMagicPlayer).Union(normalPriorityActionPlayer);
         }
 

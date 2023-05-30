@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: MartialArtistSkillList
   m_EditorClassIdentifier: 
   mustSkills: 0100000000000000
-  skills: 02000000
+  skills: 
   mustMagics: 
   magics: 

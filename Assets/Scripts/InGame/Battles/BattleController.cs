@@ -18,6 +18,9 @@ using InGame.Skills;
 using InGame.Buttles.Actions;
 using InGame.Items;
 using System.Threading;
+using Unity.MLAgents;
+using InGame.Agents.Players;
+using InGame.Agents;
 
 namespace InGame.Buttles
 {
@@ -37,45 +40,71 @@ namespace InGame.Buttles
         private EnemyFactory enemyFactory;
         private PartyManager partyManager;
         private FieldManager fieldManager;
-        private PlayerAI playerAI;
+        //private PlayerAI playerAI;
+        private PlayerAgent playerAgent;
+        private RewardProvider rewardProvider;
 
         private List<BaseCharacter> hadDoneActionCharacterList= new List<BaseCharacter>();
         private CancellationTokenSource cancellationTokenSource;
 
         [Inject]
-        public BattleController(PartyManager partyManager, FieldManager fieldManager, PlayerAI playerAI)
+        public BattleController(PartyManager partyManager, FieldManager fieldManager, PlayerAgent playerAgent, EnemyFactory enemyFactory, RewardProvider rewardProvider)
         {
             this.partyManager = partyManager;
             this.fieldManager = fieldManager;
-            this.playerAI = playerAI;
+            //this.playerAI = playerAI;
+            this.playerAgent = playerAgent;
+            this.rewardProvider = rewardProvider;
 
-            enemyFactory = new EnemyFactory(partyManager);
+            //enemyFactory = new EnemyFactory(partyManager);
+            this.enemyFactory = enemyFactory;
         }
 
         public void Start()
         {
             ObserveEncountEnemy();
+            playerAgent.OnEpisodeBeginEvent += Encount;
         }
-        
+
         private void ObserveEncountEnemy()
         {
             fieldManager.EncountedEnemyObservable
                 .Subscribe(enemyType =>
                 {
-                    LogWriter.SetFileName();
+                    playerAgent.gameObject.SetActive(true);
 
-                    //他クラスの初期化
-                    enemyManager = new EnemyManager(enemyFactory);
-                    playerAI.Init(enemyManager, playableCharacterActionManager);
+                    //LogWriter.SetFileName();
 
-                    //フィールドの生成
-                    GenerateEnemies(enemyType);
-                    LogCharacterStatus();
-                    turnManager.StartTurn();
-                    
-                    StartBattle();
+                    ////他クラスの初期化
+                    //enemyManager = new EnemyManager(enemyFactory);
+                    ////playerAI.Init(enemyManager, playableCharacterActionManager);
+                    //playerAgent.Init(partyManager, enemyManager, playableCharacterActionManager);
+
+                    ////フィールドの生成
+                    //GenerateEnemies(enemyType);
+                    //LogCharacterStatus();
+                    //turnManager.StartTurn();
+
+                    //StartBattle();
                 })
                 .AddTo(this);
+        }
+
+        private void Encount()
+        {
+            LogWriter.SetFileName();
+
+            //他クラスの初期化
+            enemyManager = new EnemyManager(enemyFactory);
+            //playerAI.Init(enemyManager, playableCharacterActionManager);
+            playerAgent.Init(partyManager, enemyManager, playableCharacterActionManager);
+
+            //フィールドの生成
+            GenerateEnemies(EnemyType.Golem);
+            LogCharacterStatus();
+            turnManager.StartTurn();
+
+            StartBattle();
         }
 
         private void GenerateEnemies(EnemyType encountedEnemyType)
@@ -89,11 +118,13 @@ namespace InGame.Buttles
         {
             playableCharacterActionManager.ClearDic();
             //プレイヤーにキャラクターの行動を決めさせる
-            playerAI.SelectCharacterAction();
+            //playerAI.SelectCharacterAction();
+            playerAgent.RequestDecision();
         }
 
         private void StartBattle()
         {
+            cancellationTokenSource?.Cancel();
             cancellationTokenSource = new CancellationTokenSource();
             ProcessBattle(cancellationTokenSource.Token).Forget();
         }
@@ -107,6 +138,7 @@ namespace InGame.Buttles
                 LogCharacterHPAndMP();
 
                 SelectPlayableCharactersAction();
+                await UniTask.WaitUntil(() => playerAgent.HadSelectedAction);
 
                 try
                 {
@@ -122,9 +154,18 @@ namespace InGame.Buttles
                 {
                     break;
                 }
+
+                rewardProvider.AddRewardByDefence();
                 
                 ClearCharacterBuff();
                 turnManager.NextTurn();
+                playerAgent.ClearFlag();
+
+                if (turnManager.turnCount > 100)
+                {
+                    FinishBattle(ResultType.Lose);
+                    break;
+                }
             }
         }
 
@@ -161,6 +202,7 @@ namespace InGame.Buttles
 
             foreach(var character in sortedCharacters)
             {
+                //Debug.Log(character.characterName);
                 ExecuteCharacterAction(character);
 
                 await UniTask.DelayFrame(1, cancellationToken: token);
@@ -180,6 +222,9 @@ namespace InGame.Buttles
 
         private void ExecuteCharacterAction(BaseCharacter character)
         {
+            if (character.characterHealth.IsDead)
+                return;
+
             if(character is PlayableCharacter)
             {
                 var actionData = playableCharacterActionManager.GetCharacterActionData(character as PlayableCharacter);
@@ -272,19 +317,25 @@ namespace InGame.Buttles
             switch (result)
             {
                 case ResultType.Win:
+                    Debug.Log("勝利");
                     LogWriter.WriteLog($"\n勝利");
+                    playerAgent.SetReward(1f);
                     break;
                 case ResultType.Lose:
+                    Debug.Log("敗北");
                     LogWriter.WriteLog($"\n負け");
+                    playerAgent.SetReward(-1f);
                     break;
             }
 
             enemyManager.Dispose();
-
+            
             Debug.Log("Finish Battle");
             LogCharacterStatus();
 
-            partyManager.ResetParty();
+            partyManager.InitParty();
+
+            playerAgent.EndEpisode();
         }
 
         private IEnumerable<BaseCharacter> AllCharacters
@@ -315,7 +366,8 @@ namespace InGame.Buttles
             LogWriter.WriteLog($"味方のステータス--------------------");
             foreach (var character in partyManager.partyCharacters)
             {
-                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP}/{character.characterStatus.MaxHP} MP{character.characterMagic.currentMP}/{character.characterStatus.MaxMP}");
+                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP}/{character.characterStatus.MaxHP} MP{character.characterMagic.currentMP}/{character.characterStatus.MaxMP}" +
+                    $"所持アイテム({character.HaveItemList.Enumerate()})");
             }
             LogWriter.WriteLog($"------------------------------------");
 

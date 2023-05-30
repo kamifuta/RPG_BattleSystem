@@ -15,12 +15,13 @@ namespace InGame.Magics
         public override int consumeMP => 15;
         public override TargetType targetType => TargetType.Enemy;
         public override int priority => 0;
-        public override bool IsTargetableDeadCharacter => false;
+        //public override bool IsTargetableDeadCharacter => false;
 
         public override void ExecuteMagic(BaseCharacter actor, BaseCharacter target)
         {
             var damage = new Damage(actor, actor.characterStatus.MagicValue, DamageTargetType.HP, AttackType.Magic, DamageAttributeType.None);
             target.ApplyDamage(damage);
+            actor.characterMagic.DecreaseMP(consumeMP);
         }
     }
 }

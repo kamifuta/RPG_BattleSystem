@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 
 namespace InGame.Characters
@@ -9,6 +11,9 @@ namespace InGame.Characters
         public int currentMP { get; private set; }
 
         private readonly int MaxMP;
+
+        private readonly ISubject<int> healValueSubject = new Subject<int>();
+        public IObservable<int> HealValueObservable => healValueSubject;
 
         public CharacterMagic(int maxMP)
         {
@@ -26,6 +31,8 @@ namespace InGame.Characters
         {
             currentMP += value;
             currentMP = Mathf.Clamp(currentMP, 0, MaxMP);
+
+            healValueSubject.OnNext(value);
         }
     }
 }

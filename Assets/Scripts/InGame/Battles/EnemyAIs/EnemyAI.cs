@@ -35,7 +35,7 @@ namespace InGame.Buttles.EnemyAIs
         public ActionData SelectAction()
         {
             //NOTE: Ç∆ÇËÇ†Ç¶Ç∏çUåÇÇ∑ÇÈ
-            var target = enemyAIMemory.TargetPlayer;
+            var target = enemyAIMemory.TargetPlayer();
             var arg = new ActionArgument(targetEnemy, target);
             return new ActionData(BaseActionType.NormalAttack, targetEnemy, target);
         }

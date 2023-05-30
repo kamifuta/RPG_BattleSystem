@@ -1,5 +1,6 @@
 using InGame.Characters.PlayableCharacters;
 using InGame.Damages;
+using Log;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,8 +21,13 @@ namespace InGame.Characters.Enemies
 
         public override void ApplyDamage(Damage damage)
         {
-            base.ApplyDamage(damage);
-            attackerSubject.OnNext((damage.attacker as PlayableCharacter, CalcDamage(damage)));
+            var damageValue = CalcDamage(damage);
+            characterHealth.ApplyDamage(damageValue);
+            attackerSubject.OnNext((damage.attacker as PlayableCharacter, damageValue));
+            LogWriter.WriteLog($"{characterName}Ç…{damageValue}ÇÃÉ_ÉÅÅ[ÉW");
+
+            if (characterHealth.IsDead)
+                LogWriter.WriteLog($"{characterName}ÇÕì|ÇÍÇΩ");
         }
     }
 }

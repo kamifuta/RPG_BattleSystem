@@ -12,7 +12,7 @@ namespace InGame.Skills
         public override int consumeMP => 5;
         public override TargetType targetType => TargetType.Enemy;
         public override int priority => 1;
-        public override bool IsTargetableDeadCharacter => false;
+        //public override bool IsTargetableDeadCharacter => false;
 
         private const float attackMagnification = 0.9f;
 
@@ -21,6 +21,7 @@ namespace InGame.Skills
             var attackValue = Mathf.CeilToInt(actor.characterStatus.AttackValue * attackMagnification);
             var damage = new Damage(actor, attackValue, DamageTargetType.HP, AttackType.Physics, DamageAttributeType.None);
             target.ApplyDamage(damage);
+            actor.characterMagic.DecreaseMP(consumeMP);
         }
     }
 }

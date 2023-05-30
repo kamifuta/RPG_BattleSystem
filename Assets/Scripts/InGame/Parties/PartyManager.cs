@@ -1,10 +1,13 @@
 using InGame.Characters;
 using InGame.Characters.PlayableCharacters;
+using InGame.Items;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using VContainer;
+using MyUtil;
 
 namespace InGame.Parties
 {
@@ -13,24 +16,28 @@ namespace InGame.Parties
         public PlayableCharacter[] partyCharacters { get; private set; } = new PlayableCharacter[4];
         private PlayableCharacterStatusDataTable statusDataTable;
 
-        public PartyManager()
+        [Inject]
+        public PartyManager(PlayableCharacterStatusDataTable statusDataTable)
         {
-            Addressables.LoadAssetAsync<PlayableCharacterStatusDataTable>("PlayableCharacterStatusDataTable").Completed += handle =>
-            {
-                statusDataTable = handle.Result;
+            this.statusDataTable = statusDataTable;
+            InitParty();
 
-                partyCharacters[0] = CreatePlayableCharacter(PlayableCharacterType.Warrior);
-                partyCharacters[0].SetCharacterName($"ím");
+            //Addressables.LoadAssetAsync<PlayableCharacterStatusDataTable>("PlayableCharacterStatusDataTable").Completed += handle =>
+            //{
+            //    statusDataTable = handle.Result;
 
-                partyCharacters[1] = CreatePlayableCharacter(PlayableCharacterType.Priest);
-                partyCharacters[1].SetCharacterName($"‘m—µ");
+            //    partyCharacters[0] = CreatePlayableCharacter(PlayableCharacterType.Warrior);
+            //    partyCharacters[0].SetCharacterName($"ím");
 
-                partyCharacters[2] = CreatePlayableCharacter(PlayableCharacterType.Mage);
-                partyCharacters[2].SetCharacterName($"–‚–@g‚¢");
+            //    partyCharacters[1] = CreatePlayableCharacter(PlayableCharacterType.Priest);
+            //    partyCharacters[1].SetCharacterName($"‘m—µ");
 
-                partyCharacters[3] = CreatePlayableCharacter(PlayableCharacterType.MartialArtist);
-                partyCharacters[3].SetCharacterName($"•“¬‰Æ");
-            };
+            //    partyCharacters[2] = CreatePlayableCharacter(PlayableCharacterType.Mage);
+            //    partyCharacters[2].SetCharacterName($"–‚–@g‚¢");
+
+            //    partyCharacters[3] = CreatePlayableCharacter(PlayableCharacterType.MartialArtist);
+            //    partyCharacters[3].SetCharacterName($"•“¬‰Æ");
+            //};
         }
 
         private PlayableCharacter CreatePlayableCharacter(PlayableCharacterType type)
@@ -65,10 +72,18 @@ namespace InGame.Parties
                 character.AddMagic(magic);
             }
 
+            var randam = new System.Random();
+            for(int i = 0; i < 3; i++)
+            {
+                var enumValues = Enum.GetValues(typeof(ItemType));
+                var itemType = (ItemType)enumValues.GetValue(randam.Next(enumValues.Length));
+                character.AddItem(itemType);
+            }
+
             return character;
         }
 
-        public void ResetParty()
+        public void InitParty()
         {
             partyCharacters[0] = CreatePlayableCharacter(PlayableCharacterType.Warrior);
             partyCharacters[0].SetCharacterName($"ím");

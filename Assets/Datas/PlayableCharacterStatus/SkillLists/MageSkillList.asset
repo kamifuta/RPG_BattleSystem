@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca30402386e538340a2e8d00bd7a944d, type: 3}
   m_Name: MageSkillList
   m_EditorClassIdentifier: 
-  mustSkills: 
+  mustSkills: 00000000
   skills: 00000000
   mustMagics: 00000000
   magics: 01000000

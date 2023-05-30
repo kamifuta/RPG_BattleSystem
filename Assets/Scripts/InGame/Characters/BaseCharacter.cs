@@ -68,7 +68,7 @@ namespace InGame.Characters
             var damageValue = Mathf.CeilToInt(baseDamageValue + Random.Range(-0.16f, 0.16f) * baseDamageValue);
             if (damageValue < 0)
             {
-                damageValue = Random.Range(0, 2);
+                damageValue = 1;
             }
 
             return damageValue;
