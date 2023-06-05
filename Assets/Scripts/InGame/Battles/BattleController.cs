@@ -47,6 +47,9 @@ namespace InGame.Buttles
         private List<BaseCharacter> hadDoneActionCharacterList= new List<BaseCharacter>();
         private CancellationTokenSource cancellationTokenSource;
 
+        private int battleCount = 0;
+        private int winCount = 0;
+
         [Inject]
         public BattleController(PartyManager partyManager, FieldManager fieldManager, PlayerAgent playerAgent, EnemyFactory enemyFactory, RewardProvider rewardProvider)
         {
@@ -98,11 +101,14 @@ namespace InGame.Buttles
             enemyManager = new EnemyManager(enemyFactory);
             //playerAI.Init(enemyManager, playableCharacterActionManager);
             playerAgent.Init(partyManager, enemyManager, playableCharacterActionManager);
+            
 
             //フィールドの生成
             GenerateEnemies(EnemyType.Golem);
             LogCharacterStatus();
             turnManager.StartTurn();
+
+            rewardProvider.AddRewardByAttack(enemyManager);
 
             StartBattle();
         }
@@ -133,6 +139,7 @@ namespace InGame.Buttles
         {
             while (true)
             {
+                playerAgent.AddReward(-0.01f);
                 hadDoneActionCharacterList.Clear();
 
                 LogCharacterHPAndMP();
@@ -314,12 +321,15 @@ namespace InGame.Buttles
             cancellationTokenSource?.Cancel();
             cancellationTokenSource = null;
 
+            battleCount++;
+
             switch (result)
             {
                 case ResultType.Win:
                     Debug.Log("勝利");
                     LogWriter.WriteLog($"\n勝利");
                     playerAgent.SetReward(1f);
+                    winCount++;
                     break;
                 case ResultType.Lose:
                     Debug.Log("敗北");
@@ -331,6 +341,7 @@ namespace InGame.Buttles
             enemyManager.Dispose();
             
             Debug.Log("Finish Battle");
+            //Debug.Log("勝率：" + (float)winCount / battleCount);
             LogCharacterStatus();
 
             partyManager.InitParty();

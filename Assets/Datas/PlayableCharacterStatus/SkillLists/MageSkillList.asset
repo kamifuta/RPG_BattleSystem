@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: MageSkillList
   m_EditorClassIdentifier: 
   mustSkills: 00000000
-  skills: 00000000
-  mustMagics: 00000000
-  magics: 01000000
+  skills: 01000000
+  mustMagics: 0000000001000000
+  magics: 02000000

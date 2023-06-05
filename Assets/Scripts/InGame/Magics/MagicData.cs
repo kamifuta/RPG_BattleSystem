@@ -3,7 +3,9 @@ using InGame.Skills;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UniRx;
 using UnityEngine;
+using System;
 
 namespace InGame.Magics
 {
@@ -16,6 +18,9 @@ namespace InGame.Magics
         public abstract TargetType targetType { get; }
         public abstract int priority { get; }
         //public abstract bool IsTargetableDeadCharacter { get; }
+
+        protected ISubject<Unit> pointlessActionSubject = new Subject<Unit>();
+        public IObservable<Unit> PointlessActionObservable => pointlessActionSubject;
 
         public virtual void ExecuteMagic(BaseCharacter actor, BaseCharacter target)
         {

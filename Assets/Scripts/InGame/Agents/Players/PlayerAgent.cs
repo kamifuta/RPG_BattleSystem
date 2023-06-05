@@ -48,8 +48,8 @@ namespace InGame.Agents.Players
 
         public override void CollectObservations(VectorSensor sensor)
         {
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterHealth.currentHP).ToList());
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterMagic.currentMP).ToList());
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => x.HPRate).ToList());
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => x.MPRate).ToList());
         }
 
         public override void WriteDiscreteActionMask(IDiscreteActionMask actionMask)

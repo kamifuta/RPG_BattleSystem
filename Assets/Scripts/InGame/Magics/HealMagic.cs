@@ -4,6 +4,7 @@ using InGame.Skills;
 using Log;
 using System.Collections;
 using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 
 namespace InGame.Magics
@@ -25,6 +26,7 @@ namespace InGame.Magics
             if (target.characterHealth.IsDead)
             {
                 LogWriter.WriteLog("‚µ‚©‚µ‰½‚à‹N‚±‚ç‚È‚©‚Á‚½");
+                pointlessActionSubject.OnNext(Unit.Default);
                 return;
             }
 

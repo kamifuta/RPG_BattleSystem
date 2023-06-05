@@ -7,6 +7,8 @@ using InGame.Agents.Players;
 using UniRx;
 using MyUtil;
 using VContainer;
+using InGame.Buttles;
+using InGame.Magics;
 
 namespace InGame.Agents
 {
@@ -25,6 +27,7 @@ namespace InGame.Agents
 
             beforeHPArray = partyManager.partyCharacters.Select(x => x.characterHealth.currentHP).ToArray();
             AddRewardByHeal();
+            AddRewardByPointlessMagic();
         }
 
         public void AddRewardByDefence()
@@ -49,15 +52,58 @@ namespace InGame.Agents
             foreach(var character in partyManager.partyCharacters)
             {
                 character.characterHealth.HealValueObservable
-                    .Where(x => x == 0)
-                    .Subscribe(_ =>
+                    //.Where(x => x > 0)
+                    .Subscribe(x =>
                     {
-                        playerAgent.AddReward(-0.01f);
+                        if (x > 0)
+                        {
+                            playerAgent.AddReward(0.01f);
+                        }
+                        else
+                        {
+                            playerAgent.AddReward(-0.01f);
+                        }
                     })
                     .AddTo(this);
 
                 character.characterMagic.HealValueObservable
-                    .Where(x => x == 0)
+                    //.Where(x => x > 0)
+                    .Subscribe(x =>
+                    {
+                        if (x > 0)
+                        {
+                            playerAgent.AddReward(0.01f);
+                        }
+                        else
+                        {
+                            playerAgent.AddReward(-0.01f);
+                        }
+                    })
+                    .AddTo(this);
+            }
+        }
+
+        public void AddRewardByAttack(EnemyManager enemyManager)
+        {
+            foreach(var enemy in enemyManager.enemies)
+            {
+                enemy.AttackerObservable
+                    .TakeWhile(_=>!enemyManager.HadDisposed)
+                    .TakeWhile(_=>!enemy.characterHealth.IsDead)
+                    .Where(x => x.Item2 > 10)
+                    .Subscribe(_ =>
+                    {
+                        playerAgent.AddReward(0.01f);
+                    })
+                    .AddTo(this);
+            }
+        }
+
+        public void AddRewardByPointlessMagic()
+        {
+            foreach(var magic in MagicDataBase.MagicDatas)
+            {
+                magic.PointlessActionObservable
                     .Subscribe(_ =>
                     {
                         playerAgent.AddReward(-0.01f);

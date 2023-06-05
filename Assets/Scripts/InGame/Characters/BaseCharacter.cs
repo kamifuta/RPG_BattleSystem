@@ -19,6 +19,9 @@ namespace InGame.Characters
         public List<SkillType> rememberSkills { get; private set; } = new List<SkillType>();
         public List<MagicType> rememberMagics { get; private set; } = new List<MagicType>();
 
+        public float HPRate => (float)characterHealth.currentHP / characterStatus.MaxHP;
+        public float MPRate => (float)characterMagic.currentMP / characterStatus.MaxMP;
+
         public BaseCharacter(CharacterStatus characterStatus)
         {
             this.characterStatus = characterStatus;

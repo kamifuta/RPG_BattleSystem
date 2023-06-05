@@ -15,6 +15,8 @@ namespace InGame.Buttles
 
         private readonly EnemyFactory enemyFactory;
 
+        public bool HadDisposed { get; private set; } = false;
+
         public EnemyManager(EnemyFactory enemyFactory)
         {
             this.enemyFactory = enemyFactory;
@@ -44,6 +46,7 @@ namespace InGame.Buttles
             }
 
             enemyAIs = Enumerable.Empty<EnemyAI>().ToArray();
+            HadDisposed = true;
             Debug.Log("EnemyManager‚Í”jŠü‚³‚ê‚Ü‚µ‚½");
         }
     }

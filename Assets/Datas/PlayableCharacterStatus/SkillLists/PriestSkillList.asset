@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mustSkills: 01000000
   skills: 00000000
-  mustMagics: 0100000002000000
-  magics: 00000000
+  mustMagics: 010000000200000000000000
+  magics: 
