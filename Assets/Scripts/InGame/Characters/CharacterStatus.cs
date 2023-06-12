@@ -17,13 +17,13 @@ namespace InGame.Characters
 
     public class CharacterStatus
     {
-        private readonly int baseMaxHP;
-        private readonly int baseMaxMP;
-        private readonly int baseAttackValue;
-        private readonly int baseMagicValue;
-        private readonly int baseDefenceValue;
-        private readonly int baseMagicDefenceValue;
-        private readonly int baseAgility;
+        public readonly int baseMaxHP;
+        public readonly int baseMaxMP;
+        public readonly int baseAttackValue;
+        public readonly int baseMagicValue;
+        public readonly int baseDefenceValue;
+        public readonly int baseMagicDefenceValue;
+        public readonly int baseAgility;
 
         public CharacterBuff characterBuff { get; private set; } = new CharacterBuff();
 
@@ -44,6 +44,17 @@ namespace InGame.Characters
             baseDefenceValue = statusData.DefenceValue;
             baseMagicDefenceValue = statusData.MagicDefenceValue;
             baseAgility = statusData.Agility;
+        }
+
+        public CharacterStatus(int maxHP, int maxMP, int attack, int magic, int defence, int magicDefence, int agility)
+        {
+            baseMaxHP = maxHP;
+            baseMaxMP = maxMP;
+            baseAttackValue = attack;
+            baseMagicValue = magic;
+            baseDefenceValue = defence;
+            baseMagicDefenceValue = magicDefence;
+            baseAgility = agility;
         }
     }
 }
