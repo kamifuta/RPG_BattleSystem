@@ -32,6 +32,8 @@ namespace PCGs
             {
                 var status = new CharacterStatus(characterStatusData);
                 var character = new PlayableCharacter(status);
+                character.SetCharacterName("Player_" + (char)('A' + i));
+                
                 playableCharacters.Add(character);
 
                 foreach(var skill in Enum.GetValues(typeof(SkillType)))
@@ -44,6 +46,21 @@ namespace PCGs
                     character.AddMagic((MagicType)magic);
                 }
 
+                var randam = new System.Random();
+                for (int j = 0; j < 3; j++)
+                {
+                    var enumValues = Enum.GetValues(typeof(ItemType));
+                    var itemType = (ItemType)enumValues.GetValue(randam.Next(enumValues.Length));
+                    character.AddItem(itemType);
+                }
+            }
+        }
+
+        public void SetItems()
+        {
+            foreach(var character in playableCharacters)
+            {
+                character.CleanItems();
                 var randam = new System.Random();
                 for (int j = 0; j < 3; j++)
                 {

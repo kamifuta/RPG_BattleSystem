@@ -74,6 +74,7 @@ namespace PCGs
                             });
                         await battleController.ResultObservable;
 
+                        characterManager.SetItems();
                         foreach(var c in party.partyCharacters)
                         {
                             c.FullHeal();
@@ -118,6 +119,7 @@ namespace PCGs
                                 }
                             });
                         await battleController.ResultObservable;
+                        characterManager.SetItems();
 
                         foreach (var c in party.partyCharacters)
                         {

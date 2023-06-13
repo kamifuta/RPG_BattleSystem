@@ -7,8 +7,8 @@ namespace InGame.Characters.PlayableCharacters
 {
     public class PlayableCharacter : BaseCharacter
     {
-        private List<ItemType> havItemList = new List<ItemType>();
-        public IReadOnlyList<ItemType> HaveItemList => havItemList;
+        private List<ItemType> haveItemList = new List<ItemType>();
+        public IReadOnlyList<ItemType> HaveItemList => haveItemList;
 
         public PlayableCharacter(CharacterStatus characterStatus) : base(characterStatus)
         {
@@ -17,12 +17,17 @@ namespace InGame.Characters.PlayableCharacters
 
         public void AddItem(ItemType itemType)
         {
-            havItemList.Add(itemType);
+            haveItemList.Add(itemType);
         }
 
         public void RemoveItem(ItemType itemType)
         {
-            havItemList.Remove(itemType);
+            haveItemList.Remove(itemType);
+        }
+
+        public void CleanItems()
+        {
+            haveItemList.Clear();
         }
     }
 }
