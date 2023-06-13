@@ -19,25 +19,14 @@ namespace InGame.Parties
         [Inject]
         public PartyManager(PlayableCharacterStatusDataTable statusDataTable)
         {
-            this.statusDataTable = statusDataTable;
-            InitParty();
+            //this.statusDataTable = statusDataTable;
+            //InitParty();
 
-            //Addressables.LoadAssetAsync<PlayableCharacterStatusDataTable>("PlayableCharacterStatusDataTable").Completed += handle =>
-            //{
-            //    statusDataTable = handle.Result;
+        }
 
-            //    partyCharacters[0] = CreatePlayableCharacter(PlayableCharacterType.Warrior);
-            //    partyCharacters[0].SetCharacterName($"ím");
-
-            //    partyCharacters[1] = CreatePlayableCharacter(PlayableCharacterType.Priest);
-            //    partyCharacters[1].SetCharacterName($"‘m—µ");
-
-            //    partyCharacters[2] = CreatePlayableCharacter(PlayableCharacterType.Mage);
-            //    partyCharacters[2].SetCharacterName($"–‚–@g‚¢");
-
-            //    partyCharacters[3] = CreatePlayableCharacter(PlayableCharacterType.MartialArtist);
-            //    partyCharacters[3].SetCharacterName($"•“¬‰Æ");
-            //};
+        public void SetParty(PlayableCharacter[] partyCharacters)
+        {
+            this.partyCharacters = partyCharacters;
         }
 
         private PlayableCharacter CreatePlayableCharacter(PlayableCharacterType type)

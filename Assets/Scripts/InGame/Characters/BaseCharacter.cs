@@ -103,6 +103,13 @@ namespace InGame.Characters
             LogWriter.WriteLog($"{characterName}は復活した");
             characterHealth.Heal(characterStatus.MaxHP / 3);
         }
+
+        public void FullHeal()
+        {
+            //デバッグ用
+            characterHealth.Heal(10000);
+            characterMagic.HealMP(10000);
+        }
     }
 }
 

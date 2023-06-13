@@ -14,6 +14,11 @@ namespace PCGs
         {
             this.partyCharacters = partyCharacters;
         }
+
+        public void SetWinningParcentage(float winningParcentage)
+        {
+            this.winningParcentage = winningParcentage;
+        }
     }
 }
 

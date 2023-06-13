@@ -25,9 +25,9 @@ namespace InGame.Agents
             this.partyManager = partyManager;
             this.playerAgent = playerAgent;
 
-            beforeHPArray = partyManager.partyCharacters.Select(x => x.characterHealth.currentHP).ToArray();
-            AddRewardByHeal();
-            AddRewardByPointlessMagic();
+            //beforeHPArray = partyManager.partyCharacters.Select(x => x.characterHealth.currentHP).ToArray();
+            //AddRewardByHeal();
+            //AddRewardByPointlessMagic();
         }
 
         public void AddRewardByDefence()

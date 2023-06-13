@@ -26,7 +26,7 @@ namespace InGame.Buttles
 {
     public class BattleController : ControllerBase, IStartable, IDisposable
     {
-        private enum ResultType
+        public enum ResultType
         {
             None,
             Win,
@@ -42,13 +42,16 @@ namespace InGame.Buttles
         private FieldManager fieldManager;
         //private PlayerAI playerAI;
         private PlayerAgent playerAgent;
-        private RewardProvider rewardProvider;
+        //private RewardProvider rewardProvider;
 
         private List<BaseCharacter> hadDoneActionCharacterList= new List<BaseCharacter>();
         private CancellationTokenSource cancellationTokenSource;
 
         private int battleCount = 0;
         private int winCount = 0;
+
+        private ISubject<ResultType> resultSubject = new Subject<ResultType>();
+        public IObservable<ResultType> ResultObservable => resultSubject;
 
         [Inject]
         public BattleController(PartyManager partyManager, FieldManager fieldManager, PlayerAgent playerAgent, EnemyFactory enemyFactory, RewardProvider rewardProvider)
@@ -57,7 +60,7 @@ namespace InGame.Buttles
             this.fieldManager = fieldManager;
             //this.playerAI = playerAI;
             this.playerAgent = playerAgent;
-            this.rewardProvider = rewardProvider;
+            //this.rewardProvider = rewardProvider;
 
             //enemyFactory = new EnemyFactory(partyManager);
             this.enemyFactory = enemyFactory;
@@ -93,7 +96,7 @@ namespace InGame.Buttles
                 .AddTo(this);
         }
 
-        private void Encount()
+        public void Encount()
         {
             LogWriter.SetFileName();
 
@@ -101,14 +104,14 @@ namespace InGame.Buttles
             enemyManager = new EnemyManager(enemyFactory);
             //playerAI.Init(enemyManager, playableCharacterActionManager);
             playerAgent.Init(partyManager, enemyManager, playableCharacterActionManager);
-            
+            resultSubject = new Subject<ResultType>();
 
             //フィールドの生成
             GenerateEnemies(EnemyType.Golem);
             LogCharacterStatus();
             turnManager.StartTurn();
 
-            rewardProvider.AddRewardByAttack(enemyManager);
+            //rewardProvider.AddRewardByAttack(enemyManager);
 
             StartBattle();
         }
@@ -162,7 +165,7 @@ namespace InGame.Buttles
                     break;
                 }
 
-                rewardProvider.AddRewardByDefence();
+                //rewardProvider.AddRewardByDefence();
                 
                 ClearCharacterBuff();
                 turnManager.NextTurn();
@@ -344,9 +347,12 @@ namespace InGame.Buttles
             //Debug.Log("勝率：" + (float)winCount / battleCount);
             LogCharacterStatus();
 
-            partyManager.InitParty();
+            //partyManager.InitParty();
 
             playerAgent.EndEpisode();
+
+            resultSubject.OnNext(result);
+            resultSubject.OnCompleted();
         }
 
         private IEnumerable<BaseCharacter> AllCharacters

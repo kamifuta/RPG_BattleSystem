@@ -1,4 +1,9 @@
+using InGame.Characters;
 using InGame.Characters.PlayableCharacters;
+using InGame.Items;
+using InGame.Magics;
+using InGame.Skills;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,17 +15,49 @@ namespace PCGs
     {
         public List<PlayableCharacter> playableCharacters { get; private set; }
 
-        public IEnumerable<Party> parties;
+        //public IEnumerable<Party> parties;
 
-        public void GenerateCharacters()
+        private CharacterStatusData characterStatusData;
+
+        public CharacterManager(CharacterStatusData characterStatusData)
         {
-
+            this.characterStatusData = characterStatusData;
         }
 
-        public void ControlParameter()
+        public void GenerateCharacters(int amount)
         {
-            parties = GetAllParty();
+            playableCharacters = new List<PlayableCharacter>();
+
+            for(int i = 0; i < amount; i++)
+            {
+                var status = new CharacterStatus(characterStatusData);
+                var character = new PlayableCharacter(status);
+                playableCharacters.Add(character);
+
+                foreach(var skill in Enum.GetValues(typeof(SkillType)))
+                {
+                    character.AddSkill((SkillType)skill);
+                }
+
+                foreach(var magic in Enum.GetValues(typeof(MagicType)))
+                {
+                    character.AddMagic((MagicType)magic);
+                }
+
+                var randam = new System.Random();
+                for (int j = 0; j < 3; j++)
+                {
+                    var enumValues = Enum.GetValues(typeof(ItemType));
+                    var itemType = (ItemType)enumValues.GetValue(randam.Next(enumValues.Length));
+                    character.AddItem(itemType);
+                }
+            }
         }
+
+        //public void ControlParameter()
+        //{
+        //    parties = GetAllParty();
+        //}
 
         public IEnumerable<Party> GetAllParty()
         {

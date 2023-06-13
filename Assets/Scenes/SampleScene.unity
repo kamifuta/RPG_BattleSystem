@@ -629,6 +629,7 @@ MonoBehaviour:
   playerAgent: {fileID: 2119043479}
   enemyStatusDataTable: {fileID: 11400000, guid: 5c0b48eb6218141468320b12cb678b55, type: 2}
   playerStatusDataTable: {fileID: 11400000, guid: 53c1619acb3bc524d8c6a41e65ac78e3, type: 2}
+  PCGStatusData: {fileID: 11400000, guid: f96ae7b5f034f6d468cf47bd2952ff78, type: 2}
 --- !u!4 &1236987046
 Transform:
   m_ObjectHideFlags: 0

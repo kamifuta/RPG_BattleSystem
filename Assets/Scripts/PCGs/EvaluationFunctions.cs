@@ -11,7 +11,7 @@ namespace PCGs
         private const float Sigma1= 3.5f;
         private const float Sigma2= 7.5f;
 
-        private CharacterManager characterManager;
+        //private CharacterManager characterManager;
 
         public float EvaluateCharacter(float synergyPoint)
         {
