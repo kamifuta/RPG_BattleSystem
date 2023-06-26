@@ -41,7 +41,8 @@ namespace InGame.Buttles
         private PartyManager partyManager;
         private FieldManager fieldManager;
         //private PlayerAI playerAI;
-        private PlayerAgent playerAgent;
+        //private PlayerAgent playerAgent;
+        private SimpleMultiAgentGroup agentGroup = new SimpleMultiAgentGroup();
         //private RewardProvider rewardProvider;
 
         private List<BaseCharacter> hadDoneActionCharacterList= new List<BaseCharacter>();
@@ -54,12 +55,16 @@ namespace InGame.Buttles
         public IObservable<ResultType> ResultObservable => resultSubject;
 
         [Inject]
-        public BattleController(PartyManager partyManager, FieldManager fieldManager, PlayerAgent playerAgent, EnemyFactory enemyFactory, RewardProvider rewardProvider)
+        public BattleController(PartyManager partyManager, FieldManager fieldManager, PlayerAgent[] playerAgents, EnemyFactory enemyFactory/*, RewardProvider rewardProvider*/)
         {
             this.partyManager = partyManager;
             this.fieldManager = fieldManager;
             //this.playerAI = playerAI;
-            this.playerAgent = playerAgent;
+            //this.playerAgent = playerAgent;
+            foreach(var agent in playerAgents)
+            {
+                agentGroup.RegisterAgent(agent);
+            }
             //this.rewardProvider = rewardProvider;
 
             //enemyFactory = new EnemyFactory(partyManager);
@@ -69,7 +74,7 @@ namespace InGame.Buttles
         public void Start()
         {
             ObserveEncountEnemy();
-            playerAgent.OnEpisodeBeginEvent += Encount;
+            //playerAgent.OnEpisodeBeginEvent += Encount;
         }
 
         private void ObserveEncountEnemy()
@@ -77,7 +82,7 @@ namespace InGame.Buttles
             fieldManager.EncountedEnemyObservable
                 .Subscribe(enemyType =>
                 {
-                    playerAgent.gameObject.SetActive(true);
+                    //playerAgent.gameObject.SetActive(true);
 
                     //LogWriter.SetFileName();
 
@@ -103,7 +108,13 @@ namespace InGame.Buttles
             //他クラスの初期化
             enemyManager = new EnemyManager(enemyFactory);
             //playerAI.Init(enemyManager, playableCharacterActionManager);
-            playerAgent.Init(partyManager, enemyManager, playableCharacterActionManager);
+            //playerAgent.Init(partyManager, enemyManager, playableCharacterActionManager);
+            int i = 0;
+            foreach(var agent in agentGroup.GetRegisteredAgents())
+            {
+                (agent as PlayerAgent).Init(partyManager.partyCharacters[i], partyManager, enemyManager, playableCharacterActionManager);
+                i++;
+            }
             resultSubject = new Subject<ResultType>();
 
             //フィールドの生成
@@ -123,12 +134,17 @@ namespace InGame.Buttles
             enemyManager.GenerateEnemies(encountedEnemyType, 1);
         }
 
-        private void SelectPlayableCharactersAction()
+        private async UniTask SelectPlayableCharactersAction()
         {
             playableCharacterActionManager.ClearDic();
             //プレイヤーにキャラクターの行動を決めさせる
             //playerAI.SelectCharacterAction();
-            playerAgent.RequestDecision();
+            foreach(var agent in agentGroup.GetRegisteredAgents())
+            {
+                (agent as PlayerAgent).RequestDecision();
+                await UniTask.DelayFrame(1);
+            }
+            //playerAgent.RequestDecision();
         }
 
         private void StartBattle()
@@ -142,13 +158,21 @@ namespace InGame.Buttles
         {
             while (true)
             {
-                playerAgent.AddReward(-0.01f);
+                //playerAgent.AddReward(-0.01f);
                 hadDoneActionCharacterList.Clear();
 
                 LogCharacterHPAndMP();
 
-                SelectPlayableCharactersAction();
-                await UniTask.WaitUntil(() => playerAgent.HadSelectedAction);
+                try
+                {
+                    await SelectPlayableCharactersAction();
+                }
+                catch(InvalidOperationException)
+                {
+                    break;
+                }
+                
+                await UniTask.WaitUntil(() => agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().All(x=>x.HadSelectedAction));
 
                 try
                 {
@@ -169,7 +193,11 @@ namespace InGame.Buttles
                 
                 ClearCharacterBuff();
                 turnManager.NextTurn();
-                playerAgent.ClearFlag();
+                foreach (var agent in agentGroup.GetRegisteredAgents())
+                {
+                    (agent as PlayerAgent).ClearFlag();
+                }
+                //playerAgent.ClearFlag();
 
                 if (turnManager.turnCount > 100)
                 {
@@ -331,28 +359,33 @@ namespace InGame.Buttles
                 case ResultType.Win:
                     Debug.Log("勝利");
                     LogWriter.WriteLog($"\n勝利");
-                    playerAgent.SetReward(1f);
+                    agentGroup.SetGroupReward(1f);
+                    //playerAgent.SetReward(1f);
                     winCount++;
                     break;
                 case ResultType.Lose:
                     Debug.Log("敗北");
                     LogWriter.WriteLog($"\n負け");
-                    playerAgent.SetReward(-1f);
+                    agentGroup.SetGroupReward(-1f);
+                    //playerAgent.SetReward(-1f);
                     break;
             }
 
             enemyManager.Dispose();
             
             Debug.Log("Finish Battle");
-            //Debug.Log("勝率：" + (float)winCount / battleCount);
+            Debug.Log("勝率：" + (float)winCount / battleCount);
             LogCharacterStatus();
 
             //partyManager.InitParty();
 
-            playerAgent.EndEpisode();
+            //playerAgent.EndEpisode();
+            agentGroup.EndGroupEpisode();
 
             resultSubject.OnNext(result);
             resultSubject.OnCompleted();
+
+            //Encount();
         }
 
         private IEnumerable<BaseCharacter> AllCharacters

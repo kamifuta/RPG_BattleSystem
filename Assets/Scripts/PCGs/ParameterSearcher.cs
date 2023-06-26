@@ -98,6 +98,8 @@ namespace PCGs
                 var variantStatus = new CharacterStatus(variantHP, variantMP, variantAttack, variantMagic, variantDefence, variantMagicDefence, variantAgility);
 
                 var variantCharacter = new PlayableCharacter(variantStatus);
+                variantCharacter.SetCharacterName(character.characterName);
+
                 characterManager.playableCharacters.Add(variantCharacter);
                 var variantParties = characterManager.GetAllParty().Where(x => x.partyCharacters.Any(y => y == variantCharacter) && !x.partyCharacters.Any(y => y == character));
                 foreach (var party in variantParties)

@@ -16,6 +16,8 @@ namespace InGame.Parties
         public PlayableCharacter[] partyCharacters { get; private set; } = new PlayableCharacter[4];
         private PlayableCharacterStatusDataTable statusDataTable;
 
+        public Action SetPartyCallback;
+
         [Inject]
         public PartyManager(PlayableCharacterStatusDataTable statusDataTable)
         {
@@ -27,6 +29,7 @@ namespace InGame.Parties
         public void SetParty(PlayableCharacter[] partyCharacters)
         {
             this.partyCharacters = partyCharacters;
+            SetPartyCallback?.Invoke();
         }
 
         private PlayableCharacter CreatePlayableCharacter(PlayableCharacterType type)

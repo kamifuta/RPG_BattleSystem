@@ -16,5 +16,10 @@ namespace InGame.Skills
         //LastAttack,
         //BigDefence,
     }
+
+    public enum EnemySkillType
+    {
+        SwingArm,
+    }
 }
 
