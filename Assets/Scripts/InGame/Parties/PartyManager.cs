@@ -30,6 +30,8 @@ namespace InGame.Parties
         {
             this.partyCharacters = partyCharacters;
             SetPartyCallback?.Invoke();
+
+            Debug.Log($"{partyCharacters[0].characterName},{partyCharacters[1].characterName},{partyCharacters[2].characterName},{partyCharacters[3].characterName}");
         }
 
         private PlayableCharacter CreatePlayableCharacter(PlayableCharacterType type)
