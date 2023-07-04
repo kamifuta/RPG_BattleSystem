@@ -25,9 +25,11 @@ namespace InGame.Agents
             this.partyManager = partyManager;
             this.playerAgent = playerAgent;
 
+            partyManager.SetPartyCallback = AddRewardByHeal;
+
             //beforeHPArray = partyManager.partyCharacters.Select(x => x.characterHealth.currentHP).ToArray();
             //AddRewardByHeal();
-            //AddRewardByPointlessMagic();
+            AddRewardByPointlessMagic();
         }
 
         public void AddRewardByDefence()
@@ -47,7 +49,7 @@ namespace InGame.Agents
             beforeHPArray = partyManager.partyCharacters.Select(x => x.characterHealth.currentHP).ToArray();
         }
 
-        private void AddRewardByHeal()
+        public void AddRewardByHeal()
         {
             foreach(var character in partyManager.partyCharacters)
             {

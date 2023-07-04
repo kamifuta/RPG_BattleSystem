@@ -17,6 +17,7 @@ namespace InGame.Containers
     {
         [SerializeField] private EncountView encountView;
         [SerializeField] private PlayerAgent playerAgent;
+        [SerializeField] private PlayerAgent[] playerAgents;
 
         [SerializeField] private EnemyStatusDataTable enemyStatusDataTable;
         [SerializeField] private PlayableCharacterStatusDataTable playerStatusDataTable;
@@ -40,7 +41,9 @@ namespace InGame.Containers
             builder.Register<EnemyFactory>(Lifetime.Transient).WithParameter("enemyStatusDataTable", enemyStatusDataTable);
 
             builder.RegisterComponent(encountView);
-            builder.RegisterComponent(playerAgent);
+            //builder.RegisterComponent(playerAgent);
+            //builder.RegisterComponentInNewPrefab(playerAgentPrefab, Lifetime.Singleton);
+            builder.RegisterComponent(playerAgents);
         }
     }
 }

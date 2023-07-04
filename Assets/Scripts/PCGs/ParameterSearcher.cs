@@ -86,7 +86,10 @@ namespace PCGs
 
                 //Debug.Log("aaa");
                 var synergyPoint = evaluationFunctions.EvaluateSynergy(parties);
-                var evaluation = evaluationFunctions.EvaluateCharacter(synergyPoint);
+                var distance = evaluationFunctions.EvaluateParameterDistance(characterManager.playableCharacters, character);
+                var penaltyParty = evaluationFunctions.PenaltyForStrongParty(parties);
+                var penaltyCharacter = evaluationFunctions.PenaltyForStrongCharacter(parties);
+                var evaluation = evaluationFunctions.EvaluateCharacter(synergyPoint, distance, penaltyParty, penaltyCharacter);
 
                 var variantHP = Mathf.CeilToInt(character.characterStatus.baseMaxHP * Random.Range(0.9f, 1.1f));
                 var variantMP = Mathf.CeilToInt(character.characterStatus.baseMaxMP * Random.Range(0.9f, 1.1f));
@@ -98,6 +101,8 @@ namespace PCGs
                 var variantStatus = new CharacterStatus(variantHP, variantMP, variantAttack, variantMagic, variantDefence, variantMagicDefence, variantAgility);
 
                 var variantCharacter = new PlayableCharacter(variantStatus);
+                variantCharacter.SetCharacterName(character.characterName);
+
                 characterManager.playableCharacters.Add(variantCharacter);
                 var variantParties = characterManager.GetAllParty().Where(x => x.partyCharacters.Any(y => y == variantCharacter) && !x.partyCharacters.Any(y => y == character));
                 foreach (var party in variantParties)
@@ -131,15 +136,20 @@ namespace PCGs
                 }
 
                 var variantSynergyPoint = evaluationFunctions.EvaluateSynergy(variantParties);
-                var variantEvaluation = evaluationFunctions.EvaluateCharacter(variantSynergyPoint);
+                var variantDistance = evaluationFunctions.EvaluateParameterDistance(characterManager.playableCharacters, variantCharacter);
+                var variantPenaltyParty = evaluationFunctions.PenaltyForStrongParty(variantParties);
+                var variantPenaltyCharacter = evaluationFunctions.PenaltyForStrongCharacter(variantParties);
+                var variantEvaluation = evaluationFunctions.EvaluateCharacter(variantSynergyPoint, variantDistance, variantPenaltyParty, variantPenaltyCharacter);
 
                 if (variantEvaluation > evaluation)
                 {
                     characterManager.playableCharacters.Remove(character);
+                    Debug.Log(variantEvaluation);
                 }
                 else
                 {
                     characterManager.playableCharacters.Remove(variantCharacter);
+                    Debug.Log(evaluation);
                 }
 
                 //Debug.Log("ssss");

@@ -41,7 +41,8 @@ namespace InGame.Buttles
         private PartyManager partyManager;
         private FieldManager fieldManager;
         //private PlayerAI playerAI;
-        private PlayerAgent playerAgent;
+        //private PlayerAgent playerAgent;
+        private SimpleMultiAgentGroup agentGroup = new SimpleMultiAgentGroup();
         //private RewardProvider rewardProvider;
 
         private List<BaseCharacter> hadDoneActionCharacterList= new List<BaseCharacter>();
@@ -50,16 +51,22 @@ namespace InGame.Buttles
         private int battleCount = 0;
         private int winCount = 0;
 
+        private bool IsBattle = false;
+
         private ISubject<ResultType> resultSubject = new Subject<ResultType>();
         public IObservable<ResultType> ResultObservable => resultSubject;
 
         [Inject]
-        public BattleController(PartyManager partyManager, FieldManager fieldManager, PlayerAgent playerAgent, EnemyFactory enemyFactory, RewardProvider rewardProvider)
+        public BattleController(PartyManager partyManager, FieldManager fieldManager, PlayerAgent[] playerAgents, EnemyFactory enemyFactory/*, RewardProvider rewardProvider*/)
         {
             this.partyManager = partyManager;
             this.fieldManager = fieldManager;
             //this.playerAI = playerAI;
-            this.playerAgent = playerAgent;
+            //this.playerAgent = playerAgent;
+            foreach(var agent in playerAgents)
+            {
+                agentGroup.RegisterAgent(agent);
+            }
             //this.rewardProvider = rewardProvider;
 
             //enemyFactory = new EnemyFactory(partyManager);
@@ -69,7 +76,7 @@ namespace InGame.Buttles
         public void Start()
         {
             ObserveEncountEnemy();
-            playerAgent.OnEpisodeBeginEvent += Encount;
+            //playerAgent.OnEpisodeBeginEvent += Encount;
         }
 
         private void ObserveEncountEnemy()
@@ -77,7 +84,7 @@ namespace InGame.Buttles
             fieldManager.EncountedEnemyObservable
                 .Subscribe(enemyType =>
                 {
-                    playerAgent.gameObject.SetActive(true);
+                    //playerAgent.gameObject.SetActive(true);
 
                     //LogWriter.SetFileName();
 
@@ -99,11 +106,18 @@ namespace InGame.Buttles
         public void Encount()
         {
             LogWriter.SetFileName();
+            IsBattle = true;
 
             //他クラスの初期化
             enemyManager = new EnemyManager(enemyFactory);
             //playerAI.Init(enemyManager, playableCharacterActionManager);
-            playerAgent.Init(partyManager, enemyManager, playableCharacterActionManager);
+            //playerAgent.Init(partyManager, enemyManager, playableCharacterActionManager);
+            int i = 0;
+            foreach(var agent in agentGroup.GetRegisteredAgents())
+            {
+                (agent as PlayerAgent).Init(partyManager.partyCharacters[i], partyManager, enemyManager, playableCharacterActionManager);
+                i++;
+            }
             resultSubject = new Subject<ResultType>();
 
             //フィールドの生成
@@ -123,12 +137,17 @@ namespace InGame.Buttles
             enemyManager.GenerateEnemies(encountedEnemyType, 1);
         }
 
-        private void SelectPlayableCharactersAction()
+        private async UniTask SelectPlayableCharactersAction(CancellationToken token)
         {
             playableCharacterActionManager.ClearDic();
             //プレイヤーにキャラクターの行動を決めさせる
             //playerAI.SelectCharacterAction();
-            playerAgent.RequestDecision();
+            foreach(var agent in agentGroup.GetRegisteredAgents())
+            {
+                (agent as PlayerAgent).RequestDecision();
+                await UniTask.DelayFrame(1, cancellationToken: token);
+            }
+            //playerAgent.RequestDecision();
         }
 
         private void StartBattle()
@@ -142,34 +161,47 @@ namespace InGame.Buttles
         {
             while (true)
             {
-                playerAgent.AddReward(-0.01f);
+                //playerAgent.AddReward(-0.01f);
                 hadDoneActionCharacterList.Clear();
 
                 LogCharacterHPAndMP();
 
-                SelectPlayableCharactersAction();
-                await UniTask.WaitUntil(() => playerAgent.HadSelectedAction);
+                try
+                {
+                    await SelectPlayableCharactersAction(token);
+                }
+                catch(InvalidOperationException)
+                {
+                    break;
+                }
+                
+                await UniTask.WaitUntil(() => agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().All(x=>x.HadSelectedAction));
 
                 try
                 {
                     //優先度の高い行動を行う
-                    await ExecuteDefenceAction(token);
-                    await ExecuteHighPriorityAction(token);
+                    ExecuteDefenceAction();
+                    ExecuteHighPriorityAction();
 
-                    await ExecuteNormalPriorityAction(token);
+                    ExecuteNormalPriorityAction();
 
-                    await ExecuteLowPriorityAction(token);
+                    ExecuteLowPriorityAction();
                 }
                 catch (OperationCanceledException)
                 {
                     break;
                 }
 
+                await UniTask.DelayFrame(1, cancellationToken: token);
                 //rewardProvider.AddRewardByDefence();
                 
                 ClearCharacterBuff();
                 turnManager.NextTurn();
-                playerAgent.ClearFlag();
+                foreach (var agent in agentGroup.GetRegisteredAgents())
+                {
+                    (agent as PlayerAgent).ClearFlag();
+                }
+                //playerAgent.ClearFlag();
 
                 if (turnManager.turnCount > 100)
                 {
@@ -179,7 +211,7 @@ namespace InGame.Buttles
             }
         }
 
-        private async UniTask ExecuteDefenceAction(CancellationToken token)
+        private void ExecuteDefenceAction()
         {
             var actionPairs = playableCharacterActionManager.GetDefenceActionPairs().OrderByDescending(x=>x.Key.characterStatus.Agility);
             foreach (var actionPair in actionPairs)
@@ -187,22 +219,26 @@ namespace InGame.Buttles
                 actionPair.Value.ExecuteAction();
                 hadDoneActionCharacterList.Add(actionPair.Key);
 
-                await UniTask.DelayFrame(1, cancellationToken:token);
+                if (!IsBattle)
+                    return;
+                //await UniTask.DelayFrame(1, cancellationToken:token);
             }
         }
 
-        private async UniTask ExecuteHighPriorityAction(CancellationToken token)
+        private void ExecuteHighPriorityAction()
         {
             var characters = playableCharacterActionManager.GetHighPriorityActionCharacters().OrderByDescending(x=>x.characterStatus.Agility);
             foreach(var character in characters)
             {
                 ExecuteCharacterAction(character);
 
-                await UniTask.DelayFrame(1, cancellationToken: token);
+                if (!IsBattle)
+                    return;
+                //await UniTask.DelayFrame(1, cancellationToken: token);
             }
         }
 
-        private async UniTask ExecuteNormalPriorityAction(CancellationToken token)
+        private void ExecuteNormalPriorityAction()
         {
             var players = playableCharacterActionManager.GetNormalPriorityActionCharacters();
             var sortedCharacters= enemyManager.enemies.Where(x => !x.characterHealth.IsDead)
@@ -215,18 +251,22 @@ namespace InGame.Buttles
                 //Debug.Log(character.characterName);
                 ExecuteCharacterAction(character);
 
-                await UniTask.DelayFrame(1, cancellationToken: token);
+                if (!IsBattle)
+                    return;
+                //await UniTask.DelayFrame(1, cancellationToken: token);
             }
         }
 
-        private async UniTask ExecuteLowPriorityAction(CancellationToken token)
+        private void ExecuteLowPriorityAction()
         {
             var characters = playableCharacterActionManager.GetLowPriorityActionCharacters().OrderByDescending(x => x.characterStatus.Agility);
             foreach (var character in characters)
             {
                 ExecuteCharacterAction(character);
 
-                await UniTask.DelayFrame(1, cancellationToken: token);
+                if (!IsBattle)
+                    return;
+                //await UniTask.DelayFrame(1, cancellationToken: token);
             }
         }
 
@@ -325,34 +365,40 @@ namespace InGame.Buttles
             cancellationTokenSource = null;
 
             battleCount++;
+            IsBattle = false;
 
             switch (result)
             {
                 case ResultType.Win:
                     Debug.Log("勝利");
                     LogWriter.WriteLog($"\n勝利");
-                    playerAgent.SetReward(1f);
+                    agentGroup.SetGroupReward(1f);
+                    //playerAgent.SetReward(1f);
                     winCount++;
                     break;
                 case ResultType.Lose:
                     Debug.Log("敗北");
                     LogWriter.WriteLog($"\n負け");
-                    playerAgent.SetReward(-1f);
+                    agentGroup.SetGroupReward(-1f);
+                    //playerAgent.SetReward(-1f);
                     break;
             }
 
             enemyManager.Dispose();
             
             Debug.Log("Finish Battle");
-            //Debug.Log("勝率：" + (float)winCount / battleCount);
+            Debug.Log("勝率：" + (float)winCount / battleCount);
             LogCharacterStatus();
 
             //partyManager.InitParty();
 
-            playerAgent.EndEpisode();
+            //playerAgent.EndEpisode();
+            agentGroup.EndGroupEpisode();
 
             resultSubject.OnNext(result);
             resultSubject.OnCompleted();
+
+            //Encount();
         }
 
         private IEnumerable<BaseCharacter> AllCharacters
