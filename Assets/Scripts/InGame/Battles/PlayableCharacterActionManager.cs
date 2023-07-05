@@ -39,8 +39,8 @@ namespace InGame.Buttles
         public ActionData GetCharacterActionData(PlayableCharacter playableCharacter)
             => playableCharacterActionDic.Single(x => x.Key == playableCharacter).Value;
 
-        public IEnumerable<KeyValuePair<PlayableCharacter, ActionData>> GetDefenceActionPairs()
-            => playableCharacterActionDic.Where(x => x.Value.actionType == BaseActionType.Defence);
+        public IEnumerable<PlayableCharacter> GetDefenceActionPairs()
+            => playableCharacterActionDic.Where(x => x.Value.actionType == BaseActionType.Defence).Select(t => t.Key);
 
         public IEnumerable<PlayableCharacter> GetHighPriorityActionCharacters()
             => playableCharacterActionDic

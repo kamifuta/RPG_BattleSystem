@@ -53,7 +53,7 @@ namespace PCGs
             for (int i = 0; i < searchTimes; i++)
             {
                 var character = characterManager.playableCharacters.RandomGet();
-                var parties = characterManager.GetAllParty().Where(x => x.partyCharacters.Any(y => y == character));
+                var parties = characterManager.GetParties(character);
                 foreach (var party in parties)
                 {
                     partyManager.SetParty(party.partyCharacters);
@@ -104,7 +104,7 @@ namespace PCGs
                 variantCharacter.SetCharacterName(character.characterName);
 
                 characterManager.playableCharacters.Add(variantCharacter);
-                var variantParties = characterManager.GetAllParty().Where(x => x.partyCharacters.Any(y => y == variantCharacter) && !x.partyCharacters.Any(y => y == character));
+                var variantParties = characterManager.GetParties(variantCharacter, new PlayableCharacter[1] { character});
                 foreach (var party in variantParties)
                 {
                     partyManager.SetParty(party.partyCharacters);

@@ -23,6 +23,46 @@ namespace MyUtil
             }
             return ret.ToString();
         }
+
+        public static IEnumerable<IEnumerable<T>> Combination<T>(this IEnumerable<T> list, int k)
+        {
+            if (k == 0)
+            {
+                yield return Enumerable.Empty<T>();
+            }
+            else
+            {
+                int i = 1;
+                foreach (var element in list)
+                {
+                    var skippedList = list.Skip(i);
+                    foreach (var combinationList in Combination(skippedList, k - 1))
+                        yield return combinationList.Prepend(element);
+
+                    i++;
+                }
+            }
+        }
+
+        public static IEnumerable<IEnumerable<T>> Combination<T>(this IEnumerable<T> list, T containElement, int k)
+        {
+            int i = 1;
+            IEnumerable<T> operatedList = list.Where(x => !x.Equals(containElement));
+            foreach (var combinationList in Combination(operatedList, k - 1))
+            {
+                yield return combinationList.Prepend(containElement);
+            }
+        }
+
+        public static IEnumerable<IEnumerable<T>> Combination<T>(this IEnumerable<T> list, T containElement, IEnumerable<T> exceptElements, int k)
+        {
+            int i = 1;
+            IEnumerable<T> operatedList = list.Where(x => !x.Equals(containElement)).Except(exceptElements);
+            foreach (var combinationList in Combination(operatedList, k - 1))
+            {
+                yield return combinationList.Prepend(containElement);
+            }
+        }
     }
 
 }

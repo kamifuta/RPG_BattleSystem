@@ -8,15 +8,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using MyUtil;
 
 namespace PCGs
 {
     public class CharacterManager
     {
         public List<PlayableCharacter> playableCharacters { get; private set; }
-
-        //public IEnumerable<Party> parties;
-
         private CharacterStatusData characterStatusData;
 
         public CharacterManager(CharacterStatusData characterStatusData)
@@ -71,41 +69,33 @@ namespace PCGs
             }
         }
 
-        //public void ControlParameter()
-        //{
-        //    parties = GetAllParty();
-        //}
-
-        public IEnumerable<Party> GetAllParty()
+        public IEnumerable<Party> GetAllParties()
         {
-            var partMemberList = Enumerate<PlayableCharacter>(playableCharacters, 4, false);
+            var partMemberList = playableCharacters.Combination(4);
             foreach(var partyMember in partMemberList)
             {
-                var party = new Party(partyMember);
+                var party = new Party(partyMember.ToArray());
                 yield return party;
             }
         }
 
-        private IEnumerable<T[]> Enumerate<T>(IEnumerable<T> items, int k, bool withRepetition)
+        public IEnumerable<Party> GetParties(PlayableCharacter containCharacter)
         {
-            if (k == 1)
+            var partMemberList = playableCharacters.Combination(containCharacter, 4);
+            foreach (var partyMember in partMemberList)
             {
-                foreach (var item in items)
-                    yield return new T[] { item };
-                yield break;
+                var party = new Party(partyMember.ToArray());
+                yield return party;
             }
-            foreach (var item in items)
+        }
+
+        public IEnumerable<Party> GetParties(PlayableCharacter containCharacter, IEnumerable<PlayableCharacter> exceptCharcters)
+        {
+            var partMemberList = playableCharacters.Combination(containCharacter, exceptCharcters, 4);
+            foreach (var partyMember in partMemberList)
             {
-                var leftside = new T[] { item };
-
-                // item よりも前のものを除く （順列と組み合わせの違い)
-                // 重複を許さないので、unusedから item そのものも取り除く
-                var unused = withRepetition ? items : items.SkipWhile(e => !e.Equals(item)).Skip(1).ToList();
-
-                foreach (var rightside in Enumerate(unused, k - 1, withRepetition))
-                {
-                    yield return leftside.Concat(rightside).ToArray();
-                }
+                var party = new Party(partyMember.ToArray());
+                yield return party;
             }
         }
     }
