@@ -1,16 +1,12 @@
 using InGame.Characters;
-using InGame.Fields;
 using InGame.Parties;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UniRx;
 using InGame.Characters.Enemies;
-using InGame.Buttles.PlayerAIs;
 using InGame.Characters.PlayableCharacters;
 using MyUtil;
-using VContainer.Unity;
-using VContainer;
 using Cysharp.Threading.Tasks;
 using Log;
 using System;
@@ -20,7 +16,6 @@ using InGame.Items;
 using System.Threading;
 using Unity.MLAgents;
 using InGame.Agents.Players;
-using InGame.Agents;
 
 namespace InGame.Buttles
 {
@@ -34,16 +29,13 @@ namespace InGame.Buttles
         }
 
         private EnemyManager enemyManager;
-        private TurnManager turnManager = new TurnManager();
+        private readonly TurnManager turnManager = new TurnManager();
         private PlayableCharacterActionManager playableCharacterActionManager = new PlayableCharacterActionManager();
 
-        private EnemyFactory enemyFactory;
+        private readonly EnemyFactory enemyFactory;
+        private readonly PlayerAgentFactory playerAgentFactory;
         private PartyManager partyManager;
-        private FieldManager fieldManager;
-        //private PlayerAI playerAI;
-        //private PlayerAgent playerAgent;
-        private SimpleMultiAgentGroup agentGroup = new SimpleMultiAgentGroup();
-        //private RewardProvider rewardProvider;
+        private readonly SimpleMultiAgentGroup agentGroup = new SimpleMultiAgentGroup();
 
         private List<BaseCharacter> hadDoneActionCharacterList= new List<BaseCharacter>();
         private CancellationTokenSource cancellationTokenSource;
@@ -56,17 +48,21 @@ namespace InGame.Buttles
         private ISubject<ResultType> resultSubject = new Subject<ResultType>();
         public IObservable<ResultType> ResultObservable => resultSubject;
 
-        [Inject]
-        public BattleController(PartyManager partyManager, FieldManager fieldManager, PlayerAgent[] playerAgents, EnemyFactory enemyFactory)
+        public BattleController(PlayerAgentFactory playerAgentFactory, EnemyFactory enemyFactory)
         {
-            this.partyManager = partyManager;
-            this.fieldManager = fieldManager;
-            foreach(var agent in playerAgents)
+            this.enemyFactory = enemyFactory;
+            this.playerAgentFactory = playerAgentFactory;
+        }
+
+        public void SetPartyCharacters(PlayableCharacter[] partyCharacters)
+        {
+            DestroyAgentObject();
+            partyManager = new PartyManager(partyCharacters);
+            foreach (var character in partyCharacters)
             {
+                var agent = playerAgentFactory.GeneratePlayerAgent(character);
                 agentGroup.RegisterAgent(agent);
             }
-
-            this.enemyFactory = enemyFactory;
         }
 
         /// <summary>
@@ -78,12 +74,10 @@ namespace InGame.Buttles
             IsBattle = true;
 
             //他クラスの初期化
-            enemyManager = new EnemyManager(enemyFactory);
-            int i = 0;
+            enemyManager = new EnemyManager(enemyFactory, partyManager);
             foreach(var agent in agentGroup.GetRegisteredAgents())
             {
-                (agent as PlayerAgent).Init(partyManager.partyCharacters[i], partyManager, enemyManager, playableCharacterActionManager);
-                i++;
+                (agent as PlayerAgent).Init(partyManager, enemyManager, playableCharacterActionManager);
             }
             resultSubject = new Subject<ResultType>();
 
@@ -130,26 +124,23 @@ namespace InGame.Buttles
                 //ターン開始時の初期化
                 hadDoneActionCharacterList.Clear();
 
+                //キャラクターの状態出力
                 LogCharacterHPAndMP();
 
-                try
-                {
-                    await SelectPlayableCharactersAction(token);
-                }
-                catch(InvalidOperationException)
-                {
-                    break;
-                }
+                //エージェントに行動を決定させる
+                SelectPlayableCharactersAction();
                 
                 //すべてのエージェントが行動を決定するまで待機
-                await UniTask.WaitUntil(() => agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().All(x=>x.HadSelectedAction));
+                await UniTask.WaitUntil(() => agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().All(x=>x.HadSelectedAction), cancellationToken:token);
 
+                //キャラクターの行動を実行する
                 ExecuteActions();
                 if (!IsBattle)
                     break;
 
                 await UniTask.DelayFrame(1, cancellationToken: token);
                 
+                //ターン終了時の処理
                 ClearCharacterBuff();
                 turnManager.NextTurn();
                 foreach (var agent in agentGroup.GetRegisteredAgents())
@@ -160,14 +151,13 @@ namespace InGame.Buttles
         }
 
         //プレイヤーに行動を決定させる
-        private async UniTask SelectPlayableCharactersAction(CancellationToken token)
+        private void SelectPlayableCharactersAction()
         {
             playableCharacterActionManager.ClearDic();
             //各エージェントに行動を決定させる
             foreach (var agent in agentGroup.GetRegisteredAgents())
             {
                 (agent as PlayerAgent).RequestDecision();
-                await UniTask.DelayFrame(1, cancellationToken: token);
             }
         }
 
@@ -372,8 +362,8 @@ namespace InGame.Buttles
             LogWriter.WriteLog($"味方のステータス--------------------");
             foreach(var character in partyManager.partyCharacters)
             {
-                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP}/{character.characterStatus.MaxHP} MP{character.characterMagic.currentMP}/{character.characterStatus.MaxMP} " +
-                    $"攻撃力{character.characterStatus.AttackValue} 魔力{character.characterStatus.MagicValue} 防御力{character.characterStatus.DefecnceValue} 魔法防御力{character.characterStatus.MagicDefecnceValue} 素早さ{character.characterStatus.Agility}" +
+                LogWriter.WriteLog($"({character.characterName.ToString()}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()} " +
+                    $"攻撃力{character.characterStatus.AttackValue.ToString()} 魔力{character.characterStatus.MagicValue.ToString()} 防御力{character.characterStatus.DefecnceValue.ToString()} 魔法防御力{character.characterStatus.MagicDefecnceValue.ToString()} 素早さ{character.characterStatus.Agility.ToString()}" +
                     $"スキル({character.rememberSkills.Enumerate()}) 魔法({character.rememberMagics.Enumerate()})");
             }
             LogWriter.WriteLog($"------------------------------------");
@@ -381,8 +371,8 @@ namespace InGame.Buttles
             LogWriter.WriteLog($"敵のステータス--------------------");
             foreach(var enemy in enemyManager.enemies)
             {
-                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP}/{enemy.characterStatus.MaxHP} MP{enemy.characterMagic.currentMP}/{enemy.characterStatus.MaxMP} " +
-                    $"攻撃力{enemy.characterStatus.AttackValue} 魔力{enemy.characterStatus.MagicValue} 防御力{enemy.characterStatus.DefecnceValue} 魔法防御力{enemy.characterStatus.MagicDefecnceValue} 素早さ{enemy.characterStatus.Agility}");
+                LogWriter.WriteLog($"({enemy.characterName.ToString()}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()} " +
+                    $"攻撃力{enemy.characterStatus.AttackValue.ToString()} 魔力{enemy.characterStatus.MagicValue.ToString()} 防御力{enemy.characterStatus.DefecnceValue.ToString()} 魔法防御力{enemy.characterStatus.MagicDefecnceValue.ToString()} 素早さ{enemy.characterStatus.Agility.ToString()}");
             }
             LogWriter.WriteLog($"------------------------------------");
         }
@@ -396,7 +386,7 @@ namespace InGame.Buttles
             LogWriter.WriteLog($"味方のステータス--------------------");
             foreach (var character in partyManager.partyCharacters)
             {
-                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP}/{character.characterStatus.MaxHP} MP{character.characterMagic.currentMP}/{character.characterStatus.MaxMP}" +
+                LogWriter.WriteLog($"({character.characterName.ToString()}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()}" +
                     $"所持アイテム({character.HaveItemList.Enumerate()})");
             }
             LogWriter.WriteLog($"------------------------------------");
@@ -404,9 +394,19 @@ namespace InGame.Buttles
             LogWriter.WriteLog($"敵のステータス--------------------");
             foreach (var enemy in enemyManager.enemies)
             {
-                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP}/{enemy.characterStatus.MaxHP} MP{enemy.characterMagic.currentMP}/{enemy.characterStatus.MaxMP}");
+                LogWriter.WriteLog($"({enemy.characterName.ToString()}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()}");
             }
             LogWriter.WriteLog($"------------------------------------");
+        }
+
+        private void DestroyAgentObject()
+        {
+            var agentList = agentGroup.GetRegisteredAgents().ToArray();
+            foreach (var agent in agentList)
+            {
+                agentGroup.UnregisterAgent(agent);
+                playerAgentFactory.DestroyPlayerAgent(agent as PlayerAgent);
+            }
         }
 
         public void Dispose()

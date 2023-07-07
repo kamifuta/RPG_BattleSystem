@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using VContainer;
 using MyUtil;
+using System.Threading;
 
 namespace InGame.Parties
 {
@@ -18,21 +19,19 @@ namespace InGame.Parties
 
         public Action SetPartyCallback;
 
-        [Inject]
-        public PartyManager(PlayableCharacterStatusDataTable statusDataTable)
-        {
-            //this.statusDataTable = statusDataTable;
-            //InitParty();
-
-        }
-
-        public void SetParty(PlayableCharacter[] partyCharacters)
+        public PartyManager(PlayableCharacter[] partyCharacters)
         {
             this.partyCharacters = partyCharacters;
-            SetPartyCallback?.Invoke();
-
-            Debug.Log($"{partyCharacters[0].characterName},{partyCharacters[1].characterName},{partyCharacters[2].characterName},{partyCharacters[3].characterName}");
         }
+
+        //public void SetParty(PlayableCharacter[] partyCharacters)
+        //{
+        //    this.partyCharacters = partyCharacters;
+        //    SetPartyCallback?.Invoke();
+
+        //    //Debug.Log($"{partyCharacters[0].characterName},{partyCharacters[1].characterName},{partyCharacters[2].characterName},{partyCharacters[3].characterName}");
+        //    //Debug.Log($"<color=blue>thread {Thread.CurrentThread.ManagedThreadId}</color>");
+        //}
 
         private PlayableCharacter CreatePlayableCharacter(PlayableCharacterType type)
         {

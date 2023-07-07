@@ -12,14 +12,6 @@ namespace Log
         private const string FolderPath = @"PCGLogs";
         private static readonly Encoding encoding = Encoding.GetEncoding("Shift_JIS");
 
-        //private static string fileName;
-
-        //public static void SetFileName()
-        //{
-        //    int fileCount = Directory.EnumerateFiles(FolderPath, "*.txt", SearchOption.TopDirectoryOnly).Count();
-        //    fileName = $"{FolderPath}/LogFile_{fileCount.ToString("000000")}.txt";
-        //}
-
         public static void WriteLog(string log)
         {
             int fileCount = Directory.EnumerateFiles(FolderPath, "*.txt", SearchOption.TopDirectoryOnly).Count();

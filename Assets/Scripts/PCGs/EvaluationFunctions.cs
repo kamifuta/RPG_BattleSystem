@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using InGame.Characters;
 
 namespace PCGs
 {
@@ -68,27 +69,24 @@ namespace PCGs
             return 0f;
         }
 
-        public float EvaluateParameterDistance(IEnumerable<PlayableCharacter> playableCharacters, PlayableCharacter evaluatedCharacter)
+        public float EvaluateParameterDistance(IEnumerable<CharacterStatus> playableCharacterStatuses, CharacterStatus evaluatedCharacterStatus)
         {
             var sumDistance = 0f;
-            foreach(var character in playableCharacters)
+            foreach(var status in playableCharacterStatuses)
             {
-                if (character == evaluatedCharacter)
+                if (status == evaluatedCharacterStatus)
                 {
                     continue;
                 }
 
-                var distance = CalcParameterDistance(character, evaluatedCharacter);
+                var distance = CalcParameterDistance(status, evaluatedCharacterStatus);
                 sumDistance += 1f / Mathf.Pow(distance, 2);
             }
             return 1f / sumDistance;
         }
 
-        private float CalcParameterDistance(PlayableCharacter character1, PlayableCharacter character2)
+        private float CalcParameterDistance(CharacterStatus status1, CharacterStatus status2)
         {
-            var status1 = character1.characterStatus;
-            var status2 = character2.characterStatus;
-
             float squaredHPDifference = Mathf.Pow(status1.baseMaxHP - status2.baseMaxHP, 2);
             float squaredMPDifference = Mathf.Pow(status1.baseMaxMP - status2.baseMaxMP, 2);
             float squaredAttackDifference = Mathf.Pow(status1.baseAttackValue - status2.baseAttackValue, 2);

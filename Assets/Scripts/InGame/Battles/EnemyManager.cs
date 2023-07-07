@@ -1,9 +1,11 @@
 using InGame.Buttles.EnemyAIs;
 using InGame.Characters.Enemies;
+using InGame.Parties;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 namespace InGame.Buttles
@@ -14,12 +16,14 @@ namespace InGame.Buttles
         public EnemyCharacter[] enemies { get; private set; }
 
         private readonly EnemyFactory enemyFactory;
+        private readonly PartyManager partyManager;
 
         public bool HadDisposed { get; private set; } = false;
 
-        public EnemyManager(EnemyFactory enemyFactory)
+        public EnemyManager(EnemyFactory enemyFactory, PartyManager partyManager)
         {
             this.enemyFactory = enemyFactory;
+            this.partyManager = partyManager;
         }
 
         public void GenerateEnemies(EnemyType encountedEnemyType, int enemyAmount)
@@ -29,10 +33,11 @@ namespace InGame.Buttles
             for(int i = 0; i < enemyAmount; i++)
             {
                 enemies[i] = enemyFactory.CreateEnemyCharacter(encountedEnemyType);
-                enemyAIs[i] = enemyFactory.CreateEnemyAI(enemies[i]);
+                enemyAIs[i] = enemyFactory.CreateEnemyAI(enemies[i], partyManager.partyCharacters);
 
                 enemies[i].SetCharacterName($"{Enum.GetName(typeof(EnemyType), encountedEnemyType)}_{(char)('A' + i)}");
             }
+            //Debug.Log($"<color=red>generated enemy</color>{Thread.CurrentThread.ManagedThreadId}");
         }
 
         public EnemyAI GetEnemyAI(EnemyCharacter enemyCharacter)

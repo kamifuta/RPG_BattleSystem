@@ -16,16 +16,7 @@ namespace InGame.Buttles
 
         public void SetPlayableCharacterAction(PlayableCharacter playableCharacter, ActionData action)
         {
-            
-            try
-            {
-                playableCharacterActionDic.Add(playableCharacter, action);
-            }
-            catch (ArgumentException)
-            {
-                Debug.Log($"<color=yellow> {playableCharacter.characterName} </color>");
-            }
-            
+            playableCharacterActionDic.Add(playableCharacter, action);
         }
 
         public void ClearDic()

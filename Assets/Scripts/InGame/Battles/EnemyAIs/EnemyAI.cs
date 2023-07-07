@@ -17,17 +17,15 @@ namespace InGame.Buttles.EnemyAIs
     public class EnemyAI : IDisposable
     {
         public EnemyCharacter targetEnemy { get; private set; }
-        //private PartyManager partyManager;
         private EnemyAIMemory enemyAIMemory;
 
         private List<IDisposable> disposables = new List<IDisposable>();
 
-        public EnemyAI(EnemyCharacter targetEnemy, PartyManager partyManager)
+        public EnemyAI(EnemyCharacter targetEnemy, IEnumerable<PlayableCharacter> playableCharacters)
         {
             this.targetEnemy = targetEnemy;
-            //this.partyManager = partyManager;
 
-            enemyAIMemory = new EnemyAIMemory(partyManager.partyCharacters);
+            enemyAIMemory = new EnemyAIMemory(playableCharacters);
 
             ObserveAttacker();
         }
@@ -36,7 +34,6 @@ namespace InGame.Buttles.EnemyAIs
         {
             //NOTE: Ç∆ÇËÇ†Ç¶Ç∏çUåÇÇ∑ÇÈ
             var target = enemyAIMemory.TargetPlayer();
-            var arg = new ActionArgument(targetEnemy, target);
             return new ActionData(BaseActionType.NormalAttack, targetEnemy, target);
         }
 

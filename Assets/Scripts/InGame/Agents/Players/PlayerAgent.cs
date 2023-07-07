@@ -21,7 +21,8 @@ namespace InGame.Agents.Players
 {
     public class PlayerAgent : Agent
     {
-        protected PlayableCharacter agentCharacter;
+        public PlayableCharacter agentCharacter { get; private set; }
+
         protected PartyManager partyManager;
         protected EnemyManager enemyManager;
         protected PlayableCharacterActionManager playableCharacterActionManager;
@@ -36,12 +37,16 @@ namespace InGame.Agents.Players
         private const int LivingEnemyAction = 4;
         private const int PlayerAction = 5;
 
-        public void Init(PlayableCharacter agentCharacter, PartyManager partyManager, EnemyManager enemyManager, PlayableCharacterActionManager playableCharacterActionManager)
+        public void Init(PartyManager partyManager, EnemyManager enemyManager, PlayableCharacterActionManager playableCharacterActionManager)
         {
-            this.agentCharacter = agentCharacter;
             this.partyManager = partyManager;
             this.enemyManager = enemyManager;
             this.playableCharacterActionManager = playableCharacterActionManager;
+        }
+
+        public void SetAgentCharacter(PlayableCharacter agentCharacter)
+        {
+            this.agentCharacter = agentCharacter;
         }
 
         public override void OnEpisodeBegin()
@@ -61,58 +66,7 @@ namespace InGame.Agents.Players
             var skillEnumValues = Enum.GetValues(typeof(SkillType));
             var magicEnumValues = Enum.GetValues(typeof(MagicType));
 
-            //for(int i = 0; i < partyManager.partyCharacters.Length; i++)
-            //{
-            //    var character = partyManager.partyCharacters[i];
-
-            //    //actionMask.SetActionEnabled(i, (int)BaseActionType.UseItem, false);
-            //    //actionMask.SetActionEnabled(i, (int)BaseActionType.UseMagic, false);
-            //    //actionMask.SetActionEnabled(i, (int)BaseActionType.UseSkill, false);
-
-            //    if (character.HaveItemList.Count <= 0)
-            //    {
-            //        actionMask.SetActionEnabled(i, (int)BaseActionType.UseItem, false);
-            //    }
-            //    else
-            //    {
-            //        foreach (var item in itemEnumValues)
-            //        {
-            //            actionMask.SetActionEnabled(i + ItemAction, (int)item, character.HaveItemList.Any(x => x == (ItemType)item));
-            //        }
-            //    }
-
-            //    if (character.rememberSkills.Count > 0 && character.rememberSkills.Select(x => SkillDataBase.GetSkillData(x)).Any(x => x.consumeMP < character.characterMagic.currentMP))
-            //    {
-            //        foreach (var skill in skillEnumValues)
-            //        {
-            //            var enable = character.rememberSkills.Any(x => x == (SkillType)skill) && SkillDataBase.GetSkillData((SkillType)skill).consumeMP < character.characterMagic.currentMP;
-            //            actionMask.SetActionEnabled(i + SkillAction, (int)skill, enable);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        actionMask.SetActionEnabled(i, (int)BaseActionType.UseSkill, false);
-            //    }
-
-            //    if (character.rememberMagics.Count > 0 && character.rememberMagics.Select(x => MagicDataBase.GetMagicData(x)).Any(x => x.consumeMP < character.characterMagic.currentMP))
-            //    {
-            //        foreach (var magic in magicEnumValues)
-            //        {
-            //            var enable = character.rememberMagics.Any(x => x == (MagicType)magic) && MagicDataBase.GetMagicData((MagicType)magic).consumeMP < character.characterMagic.currentMP;
-            //            actionMask.SetActionEnabled(i + MagicAction, (int)magic, enable);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        actionMask.SetActionEnabled(i, (int)BaseActionType.UseMagic, false);
-            //    }
-            //}
-
             var character = agentCharacter;
-
-            //actionMask.SetActionEnabled(i, (int)BaseActionType.UseItem, false);
-            //actionMask.SetActionEnabled(i, (int)BaseActionType.UseMagic, false);
-            //actionMask.SetActionEnabled(i, (int)BaseActionType.UseSkill, false);
 
             if (character.HaveItemList.Count <= 0)
             {
@@ -163,107 +117,6 @@ namespace InGame.Agents.Players
         public override void OnActionReceived(ActionBuffers actionBuffers)
         {
             BaseCharacter target;
-
-            //for(int i = 0; i < partyManager.partyCharacters.Length; i++)
-            //{
-            //    var character = partyManager.partyCharacters[i];
-
-            //    if (character.characterHealth.IsDead)
-            //        continue;
-
-            //    var actionType = actionBuffers.DiscreteActions[i];
-            //    int targetIndex;
-            //    ActionData action = null;
-
-            //    switch (actionType)
-            //    {
-            //        case (int)BaseActionType.NormalAttack:
-            //            targetIndex = actionBuffers.DiscreteActions[LivingEnemyAction];
-            //            target = enemyManager.enemies[targetIndex];
-            //            action = new ActionData(BaseActionType.NormalAttack, character, target);
-            //            playableCharacterActionManager.SetPlayableCharacterAction(character, action);
-            //            break;
-            //        case (int)BaseActionType.Defence:
-            //            action = new ActionData(BaseActionType.Defence, character);
-            //            playableCharacterActionManager.SetPlayableCharacterAction(character, action);
-            //            break;
-            //        case (int)BaseActionType.UseItem:
-            //            var itemType = (ItemType)Enum.ToObject(typeof(ItemType), actionBuffers.DiscreteActions[i + ItemAction]);
-            //            var itemData = ItemDataBase.GetItemData(itemType);
-            //            switch (itemData.targetType)
-            //            {
-            //                case TargetType.Self:
-            //                    action = new ActionData(BaseActionType.UseItem, character, character, itemType);
-            //                    break;
-            //                case TargetType.Friends:
-            //                    targetIndex = actionBuffers.DiscreteActions[PlayerAction];
-            //                    target = partyManager.partyCharacters[targetIndex];
-            //                    action = new ActionData(BaseActionType.UseItem, character, target, itemType);
-            //                    break;
-            //                case TargetType.Enemy:
-            //                    targetIndex = actionBuffers.DiscreteActions[LivingEnemyAction];
-            //                    target = enemyManager.enemies[targetIndex];
-            //                    action = new ActionData(BaseActionType.UseItem, character, target, itemType);
-            //                    break;
-            //                case TargetType.AllFriends:
-            //                    break;
-            //                case TargetType.AllEnemy:
-            //                    break;
-            //            }
-            //            playableCharacterActionManager.SetPlayableCharacterAction(partyManager.partyCharacters[i], action);
-            //            break;
-            //        case (int)BaseActionType.UseSkill:
-            //            var skillType = (SkillType)Enum.ToObject(typeof(ItemType), actionBuffers.DiscreteActions[i + SkillAction]);
-            //            var skillData = SkillDataBase.GetSkillData(skillType);
-            //            switch (skillData.targetType)
-            //            {
-            //                case TargetType.Self:
-            //                    action = new ActionData(BaseActionType.UseSkill, character, character, skillType);
-            //                    break;
-            //                case TargetType.Friends:
-            //                    targetIndex = actionBuffers.DiscreteActions[PlayerAction];
-            //                    target = partyManager.partyCharacters[targetIndex];
-            //                    action = new ActionData(BaseActionType.UseSkill, character, target, skillType);
-            //                    break;
-            //                case TargetType.Enemy:
-            //                    targetIndex = actionBuffers.DiscreteActions[LivingEnemyAction];
-            //                    target = enemyManager.enemies[targetIndex];
-            //                    action = new ActionData(BaseActionType.UseSkill, character, target, skillType);
-            //                    break;
-            //                case TargetType.AllFriends:
-            //                    break;
-            //                case TargetType.AllEnemy:
-            //                    break;
-            //            }
-            //            playableCharacterActionManager.SetPlayableCharacterAction(partyManager.partyCharacters[i], action);
-            //            break;
-            //        case (int)BaseActionType.UseMagic:
-            //            var magicType= (MagicType)Enum.ToObject(typeof(MagicType), actionBuffers.DiscreteActions[i + MagicAction]);
-            //            var magicData = MagicDataBase.GetMagicData(magicType);
-            //            switch (magicData.targetType)
-            //            {
-            //                case TargetType.Self:
-            //                    action = new ActionData(BaseActionType.UseMagic, character, character, magicType);
-            //                    break;
-            //                case TargetType.Friends:
-            //                    targetIndex = actionBuffers.DiscreteActions[PlayerAction];
-            //                    target = partyManager.partyCharacters[targetIndex];
-            //                    action = new ActionData(BaseActionType.UseMagic, character, target, magicType);
-            //                    break;
-            //                case TargetType.Enemy:
-            //                    targetIndex = actionBuffers.DiscreteActions[LivingEnemyAction];
-            //                    target = enemyManager.enemies[targetIndex];
-            //                    action = new ActionData(BaseActionType.UseMagic, character, target, magicType);
-            //                    break;
-            //                case TargetType.AllFriends:
-            //                    break;
-            //                case TargetType.AllEnemy:
-            //                    break;
-            //            }
-            //            playableCharacterActionManager.SetPlayableCharacterAction(partyManager.partyCharacters[i], action);
-            //            break;
-            //    }
-            //}
 
             var character = agentCharacter;
 

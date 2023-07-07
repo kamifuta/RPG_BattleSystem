@@ -16,48 +16,68 @@ using VContainer.Unity;
 using InGame.Parties;
 using Log;
 using System.Text;
+using System.Threading.Tasks;
+using InGame.Agents.Players;
 
 namespace PCGs
 {
     public class ParameterSearcher : IStartable, IDisposable
     {
-        private CharacterManager characterManager;
-        private EvaluationFunctions evaluationFunctions=new EvaluationFunctions();
-        private BattleController battleController;
-        private PartyManager partyManager;
+        private readonly CharacterManager characterManager;
+        private readonly EnemyFactory enemyFactory;
+        private readonly PlayerAgentFactory playerAgentFactory;
 
-        private CancellationTokenSource tokenSource;
+        private BattleController battleController;
+
+        private EvaluationFunctions evaluationFunctions=new EvaluationFunctions();
+
+        private CancellationTokenSource tokenSource = new CancellationTokenSource();
 
         private readonly int searchTimes = 5000;
         private readonly int battleTimes = 10;
 
         [Inject]
-        public ParameterSearcher(CharacterManager characterManager, BattleController battleController, PartyManager partyManager)
+        public ParameterSearcher(CharacterManager characterManager, EnemyFactory enemyFactory, PlayerAgentFactory playerAgentFactory)
         {
             this.characterManager = characterManager;
-            this.battleController = battleController;
-            this.partyManager = partyManager;
-
-            tokenSource = new CancellationTokenSource();
+            this.enemyFactory = enemyFactory;
+            this.playerAgentFactory = playerAgentFactory;
         }
 
         public void Start()
         {
-            StartSearch();
+            StartSearch().Forget();
         }
 
-        public async void StartSearch()
+        public async UniTaskVoid StartSearch()
         {
-            characterManager.GenerateCharacters(10);
+            //プレイヤーキャラクターを生成する
+            characterManager.GenerateCharacterStatuses(10);
             LogParameter();
+
+            battleController = new BattleController(playerAgentFactory, enemyFactory);
+
+            //探索を行う
             for (int i = 0; i < searchTimes; i++)
             {
-                var character = characterManager.playableCharacters.RandomGet();
-                var parties = characterManager.GetParties(character);
-                foreach (var party in parties)
-                {
-                    partyManager.SetParty(party.partyCharacters);
+                //調整の対象となるキャラクターをランダムに取得する
+                int characterIndex = Random.Range(0, 10);
 
+                //調整対象となるキャラクターを含むパーティの組み合わせをすべて取得する
+                IEnumerable<IEnumerable<int>> partyCharacterIndexList = Enumerable.Range(0, 9).Combination(characterIndex, 4);
+
+                List<Party> partyList = new List<Party>();
+
+                //すべてのパーティに対して評価を行う
+                //Parallel.ForEach(partyCharacterIndexList, async partyCharacterIndex =>
+                foreach(var partyCharacterIndex in partyCharacterIndexList)
+                {
+                    PlayableCharacter[] partyCharacterArray = characterManager.GenerateCharacters(partyCharacterIndex).ToArray();
+                    battleController.SetPartyCharacters(partyCharacterArray);
+                    var party = new Party(partyCharacterArray);
+                    partyList.Add(party);
+
+                    //戦闘を行い、勝率を取得する
                     int winCount = 0;
                     for (int j = 0; j < battleTimes; j++)
                     {
@@ -65,49 +85,58 @@ namespace PCGs
                         battleController.Encount();
                         battleController.ResultObservable
                             .Take(1)
+                            .Where(result => result == BattleController.ResultType.Win)
                             .Subscribe(result =>
                             {
-                                if (result == BattleController.ResultType.Win)
-                                {
-                                    winCount++;
-                                }
+                                winCount++;
                             });
+
+                        //バトル終了まで待機する
                         await battleController.ResultObservable;
 
-                        characterManager.SetItems();
-                        foreach(var c in party.partyCharacters)
+                        //すべてのキャラクターに対して初期化する
+                        characterManager.SetItems(partyCharacterArray);
+                        for (int k = 0; k < 4; k++)
                         {
-                            c.FullHeal();
+                            partyCharacterArray[k].FullHeal();
                         }
                     }
 
                     party.SetWinningParcentage((float)winCount / battleTimes);
                 }
 
-                //Debug.Log("aaa");
-                var synergyPoint = evaluationFunctions.EvaluateSynergy(parties);
-                var distance = evaluationFunctions.EvaluateParameterDistance(characterManager.playableCharacters, character);
-                var penaltyParty = evaluationFunctions.PenaltyForStrongParty(parties);
-                var penaltyCharacter = evaluationFunctions.PenaltyForStrongCharacter(parties);
+                var characterStatus = characterManager.PlayableCharacterStatusList[characterIndex];
+
+                //選択したキャラクターに対して評価を行う
+                var synergyPoint = evaluationFunctions.EvaluateSynergy(partyList);
+                var distance = evaluationFunctions.EvaluateParameterDistance(characterManager.PlayableCharacterStatusList, characterStatus);
+                var penaltyParty = evaluationFunctions.PenaltyForStrongParty(partyList);
+                var penaltyCharacter = evaluationFunctions.PenaltyForStrongCharacter(partyList);
                 var evaluation = evaluationFunctions.EvaluateCharacter(synergyPoint, distance, penaltyParty, penaltyCharacter);
 
-                var variantHP = Mathf.CeilToInt(character.characterStatus.baseMaxHP * Random.Range(0.9f, 1.1f));
-                var variantMP = Mathf.CeilToInt(character.characterStatus.baseMaxMP * Random.Range(0.9f, 1.1f));
-                var variantAttack = Mathf.CeilToInt(character.characterStatus.baseAttackValue * Random.Range(0.9f, 1.1f));
-                var variantMagic = Mathf.CeilToInt(character.characterStatus.baseMagicValue * Random.Range(0.9f, 1.1f));
-                var variantDefence = Mathf.CeilToInt(character.characterStatus.baseDefenceValue * Random.Range(0.9f, 1.1f));
-                var variantMagicDefence = Mathf.CeilToInt(character.characterStatus.baseMagicDefenceValue * Random.Range(0.9f, 1.1f));
-                var variantAgility = Mathf.CeilToInt(character.characterStatus.baseAgility * Random.Range(0.9f, 1.1f));
+                //パラメータを突然変異させる
+                var variantHP = Mathf.CeilToInt(characterStatus.baseMaxHP * Random.Range(0.9f, 1.1f));
+                var variantMP = Mathf.CeilToInt(characterStatus.baseMaxMP * Random.Range(0.9f, 1.1f));
+                var variantAttack = Mathf.CeilToInt(characterStatus.baseAttackValue * Random.Range(0.9f, 1.1f));
+                var variantMagic = Mathf.CeilToInt(characterStatus.baseMagicValue * Random.Range(0.9f, 1.1f));
+                var variantDefence = Mathf.CeilToInt(characterStatus.baseDefenceValue * Random.Range(0.9f, 1.1f));
+                var variantMagicDefence = Mathf.CeilToInt(characterStatus.baseMagicDefenceValue * Random.Range(0.9f, 1.1f));
+                var variantAgility = Mathf.CeilToInt(characterStatus.baseAgility * Random.Range(0.9f, 1.1f));
                 var variantStatus = new CharacterStatus(variantHP, variantMP, variantAttack, variantMagic, variantDefence, variantMagicDefence, variantAgility);
 
-                var variantCharacter = new PlayableCharacter(variantStatus);
-                variantCharacter.SetCharacterName(character.characterName);
+                characterManager.AddNewCharacterStatus(variantStatus);
 
-                characterManager.playableCharacters.Add(variantCharacter);
-                var variantParties = characterManager.GetParties(variantCharacter, new PlayableCharacter[1] { character});
-                foreach (var party in variantParties)
+                partyCharacterIndexList = Enumerable.Range(0, 10).Combination(10, new int[1] { characterIndex }, 4);
+                partyList.Clear();
+
+                //すべてのパーティに対して評価を行う
+                //Parallel.ForEach(partyCharacterIndexList, async partyCharacterIndexList =>
+                foreach (var partyCharacterIndex in partyCharacterIndexList)
                 {
-                    partyManager.SetParty(party.partyCharacters);
+                    PlayableCharacter[] partyCharacterArray = characterManager.GenerateCharacters(partyCharacterIndex).ToArray();
+                    battleController.SetPartyCharacters(partyCharacterArray);
+                    var party = new Party(partyCharacterArray);
+                    partyList.Add(party);
 
                     int winCount = 0;
                     for (int j = 0; j < battleTimes; j++)
@@ -116,54 +145,59 @@ namespace PCGs
                         battleController.Encount();
                         battleController.ResultObservable
                             .Take(1)
+                            .Where(result => result == BattleController.ResultType.Win)
                             .Subscribe(result =>
                             {
-                                if (result == BattleController.ResultType.Win)
-                                {
-                                    winCount++;
-                                }
+                                winCount++;
                             });
-                        await battleController.ResultObservable;
-                        characterManager.SetItems();
 
-                        foreach (var c in party.partyCharacters)
+                        //バトル終了まで待機する
+                        await battleController.ResultObservable;
+
+                        //すべてのキャラクターに対して初期化する
+                        characterManager.SetItems(party.partyCharacters);
+                        for (int k = 0; k < 4; k++)
                         {
-                            c.FullHeal();
+                            party.partyCharacters[k].FullHeal();
                         }
                     }
 
                     party.SetWinningParcentage((float)winCount / battleTimes);
+                    await UniTask.DelayFrame(1, cancellationToken: tokenSource.Token);
                 }
 
-                var variantSynergyPoint = evaluationFunctions.EvaluateSynergy(variantParties);
-                var variantDistance = evaluationFunctions.EvaluateParameterDistance(characterManager.playableCharacters, variantCharacter);
-                var variantPenaltyParty = evaluationFunctions.PenaltyForStrongParty(variantParties);
-                var variantPenaltyCharacter = evaluationFunctions.PenaltyForStrongCharacter(variantParties);
+                //突然変異したキャラクターを評価する
+                var variantSynergyPoint = evaluationFunctions.EvaluateSynergy(partyList);
+                var variantDistance = evaluationFunctions.EvaluateParameterDistance(characterManager.PlayableCharacterStatusList.Where(x=>x!=characterStatus), variantStatus);
+                var variantPenaltyParty = evaluationFunctions.PenaltyForStrongParty(partyList);
+                var variantPenaltyCharacter = evaluationFunctions.PenaltyForStrongCharacter(partyList);
                 var variantEvaluation = evaluationFunctions.EvaluateCharacter(variantSynergyPoint, variantDistance, variantPenaltyParty, variantPenaltyCharacter);
 
+                //評価値が高いほうを残す
                 if (variantEvaluation > evaluation)
                 {
-                    characterManager.playableCharacters.Remove(character);
-                    Debug.Log(variantEvaluation);
+                    characterManager.RemoveCharacter(characterStatus);
                 }
                 else
                 {
-                    characterManager.playableCharacters.Remove(variantCharacter);
-                    Debug.Log(evaluation);
+                    characterManager.RemoveCharacter(variantStatus);
                 }
 
-                //Debug.Log("ssss");
                 LogParameter();
             }
+
+            battleController.Dispose();
         }
 
         private void LogParameter()
         {
-            StringBuilder log = new StringBuilder();
-            foreach(var character in characterManager.playableCharacters)
+            StringBuilder log = new StringBuilder(700);
+            int i = 0;
+            foreach(var status in characterManager.PlayableCharacterStatusList)
             {
-                log.Append($"({character.characterName}) HP:{character.characterHealth.currentHP}/{character.characterStatus.MaxHP} MP{character.characterMagic.currentMP}/{character.characterStatus.MaxMP} " +
-                    $"攻撃力{character.characterStatus.AttackValue} 魔力{character.characterStatus.MagicValue} 防御力{character.characterStatus.DefecnceValue} 魔法防御力{character.characterStatus.MagicDefecnceValue} 素早さ{character.characterStatus.Agility}\n");
+                log.Append($"(Character{i.ToString()}) HP:{status.MaxHP.ToString()} MP:{status.MaxMP.ToString()} " +
+                    $"攻撃力{status.AttackValue.ToString()} 魔力{status.MagicValue.ToString()} 防御力{status.DefecnceValue.ToString()} 魔法防御力{status.MagicDefecnceValue.ToString()} 素早さ{status.Agility.ToString()}\n");
+                i++;
             }
             PCGLogWriter.WriteLog(log.ToString());
         }
@@ -171,6 +205,7 @@ namespace PCGs
         public void Dispose()
         {
             tokenSource?.Cancel();
+            battleController?.Dispose();
         }
     }
 }

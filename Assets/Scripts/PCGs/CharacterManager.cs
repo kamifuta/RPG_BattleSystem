@@ -6,44 +6,63 @@ using InGame.Skills;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using MyUtil;
+using VContainer;
 
 namespace PCGs
 {
     public class CharacterManager
     {
-        public List<PlayableCharacter> playableCharacters { get; private set; }
-        private CharacterStatusData characterStatusData;
+        private readonly List<CharacterStatus> playableCharacterStatusList = new List<CharacterStatus>();
+        public IReadOnlyList<CharacterStatus> PlayableCharacterStatusList => playableCharacterStatusList;
 
+        private readonly CharacterStatusData characterStatusData;
+
+        [Inject]
         public CharacterManager(CharacterStatusData characterStatusData)
         {
             this.characterStatusData = characterStatusData;
         }
 
-        public void GenerateCharacters(int amount)
+        /// <summary>
+        /// 引数の数のプレイヤーのパラメータを生成する
+        /// </summary>
+        /// <param name="amount"></param>
+        public void GenerateCharacterStatuses(int amount)
         {
-            playableCharacters = new List<PlayableCharacter>();
-
             for(int i = 0; i < amount; i++)
             {
-                var status = new CharacterStatus(characterStatusData);
-                var character = new PlayableCharacter(status);
-                character.SetCharacterName("Player_" + (char)('A' + i));
-                
-                playableCharacters.Add(character);
+                //プレイヤーのパラメータを生成する
+                CharacterStatus status = new CharacterStatus(characterStatusData);
+                playableCharacterStatusList.Add(status);
+            }
+        }
 
+        /// <summary>
+        /// 引数の数だけプレイヤーを生成する
+        /// </summary>
+        /// <param name="amount">生成するプレイヤーの数</param>
+        public IEnumerable<PlayableCharacter> GenerateCharacters(IEnumerable<int> indexList)
+        {
+            foreach(var index in indexList)
+            {
+                //プレイヤーのパラメータを生成する
+                CharacterStatus status = playableCharacterStatusList[index];
+                PlayableCharacter character = new PlayableCharacter(status);
+                character.SetCharacterName("Player_" + (char)('A' + index));
+
+                //使えるスキルをセットする
                 foreach(var skill in Enum.GetValues(typeof(SkillType)))
                 {
                     character.AddSkill((SkillType)skill);
                 }
 
+                //使える魔法をセットする
                 foreach(var magic in Enum.GetValues(typeof(MagicType)))
                 {
                     character.AddMagic((MagicType)magic);
                 }
 
+                //アイテムを持たせる
                 var randam = new System.Random();
                 for (int j = 0; j < 3; j++)
                 {
@@ -51,12 +70,37 @@ namespace PCGs
                     var itemType = (ItemType)enumValues.GetValue(randam.Next(enumValues.Length));
                     character.AddItem(itemType);
                 }
+
+                yield return character;
             }
         }
 
-        public void SetItems()
+        /// <summary>
+        /// 新しくキャラクターを追加する
+        /// </summary>
+        /// <param name="character"></param>
+        public void AddNewCharacterStatus(CharacterStatus characterStatus)
         {
-            foreach(var character in playableCharacters)
+            playableCharacterStatusList.Add(characterStatus);
+        }
+
+        /// <summary>
+        /// プレイヤーを削除する
+        /// </summary>
+        /// <param name="character">削除するプレイヤー</param>
+        public void RemoveCharacter(CharacterStatus status)
+        {
+            //playerAgentFactory.DestroyPlayerAgent(playerDic[character]);
+            playableCharacterStatusList.Remove(status);
+        }
+
+        /// <summary>
+        /// 指定したキャラクターたちにアイテムを新しく持たせる
+        /// </summary>
+        /// <param name="targetCharacters"></param>
+        public void SetItems(IEnumerable<PlayableCharacter> targetCharacters)
+        {
+            foreach(var character in targetCharacters)
             {
                 character.CleanItems();
                 var randam = new System.Random();
@@ -66,36 +110,6 @@ namespace PCGs
                     var itemType = (ItemType)enumValues.GetValue(randam.Next(enumValues.Length));
                     character.AddItem(itemType);
                 }
-            }
-        }
-
-        public IEnumerable<Party> GetAllParties()
-        {
-            var partMemberList = playableCharacters.Combination(4);
-            foreach(var partyMember in partMemberList)
-            {
-                var party = new Party(partyMember.ToArray());
-                yield return party;
-            }
-        }
-
-        public IEnumerable<Party> GetParties(PlayableCharacter containCharacter)
-        {
-            var partMemberList = playableCharacters.Combination(containCharacter, 4);
-            foreach (var partyMember in partMemberList)
-            {
-                var party = new Party(partyMember.ToArray());
-                yield return party;
-            }
-        }
-
-        public IEnumerable<Party> GetParties(PlayableCharacter containCharacter, IEnumerable<PlayableCharacter> exceptCharcters)
-        {
-            var partMemberList = playableCharacters.Combination(containCharacter, exceptCharcters, 4);
-            foreach (var partyMember in partMemberList)
-            {
-                var party = new Party(partyMember.ToArray());
-                yield return party;
             }
         }
     }
