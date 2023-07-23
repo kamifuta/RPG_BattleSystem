@@ -25,7 +25,7 @@ namespace InGame.Magics
         {
             if (target.characterHealth.IsDead)
             {
-                LogWriter.WriteLog("‚µ‚©‚µ‰½‚à‹N‚±‚ç‚È‚©‚Á‚½");
+                //LogWriter.WriteLog("‚µ‚©‚µ‰½‚à‹N‚±‚ç‚È‚©‚Á‚½");
                 pointlessActionSubject.OnNext(Unit.Default);
                 return;
             }

@@ -49,10 +49,10 @@ namespace InGame.Characters
         {
             var damageValue = CalcDamage(damage);
             characterHealth.ApplyDamage(damageValue);
-            LogWriter.WriteLog($"{characterName}に{damageValue}のダメージ");
+            //LogWriter.WriteLog($"{characterName}に{damageValue.ToString()}のダメージ");
 
-            if(characterHealth.IsDead)
-                LogWriter.WriteLog($"{characterName}は倒れた");
+            //if(characterHealth.IsDead)
+                //LogWriter.WriteLog($"{characterName}は倒れた");
         }
 
         protected int CalcDamage(Damage damage)
@@ -83,7 +83,7 @@ namespace InGame.Characters
             {
                 var damagedValue = characterStatus.MaxHP - characterHealth.currentHP;
                 var logValue = damagedValue > healing.HealHPValue ? healing.HealHPValue : damagedValue;
-                LogWriter.WriteLog($"{characterName}のHPが{logValue}回復した");
+                //LogWriter.WriteLog($"{characterName}のHPが{logValue.ToString()}回復した");
 
             }
             characterHealth.Heal(healing.HealHPValue);
@@ -92,7 +92,7 @@ namespace InGame.Characters
             {
                 var damagedValue = characterStatus.MaxMP - characterMagic.currentMP;
                 var logValue = damagedValue > healing.HealMPValue ? healing.HealMPValue : damagedValue;
-                LogWriter.WriteLog($"{characterName}のMPが{logValue}回復した");
+                //LogWriter.WriteLog($"{characterName}のMPが{logValue.ToString()}回復した");
 
             }
             characterMagic.HealMP(healing.HealMPValue);
@@ -100,7 +100,7 @@ namespace InGame.Characters
 
         public void Revaival()
         {
-            LogWriter.WriteLog($"{characterName}は復活した");
+            //LogWriter.WriteLog($"{characterName}は復活した");
             characterHealth.Heal(characterStatus.MaxHP / 3);
         }
 

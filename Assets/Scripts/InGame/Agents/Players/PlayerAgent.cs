@@ -16,6 +16,7 @@ using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
 using VContainer;
+using UniRx;
 
 namespace InGame.Agents.Players
 {
@@ -37,16 +38,33 @@ namespace InGame.Agents.Players
         private const int LivingEnemyAction = 4;
         private const int PlayerAction = 5;
 
+        private int addDamage = 0;
+
         public void Init(PartyManager partyManager, EnemyManager enemyManager, PlayableCharacterActionManager playableCharacterActionManager)
         {
             this.partyManager = partyManager;
             this.enemyManager = enemyManager;
             this.playableCharacterActionManager = playableCharacterActionManager;
+
+            ObserveAddDamageForEnemy();
         }
 
         public void SetAgentCharacter(PlayableCharacter agentCharacter)
         {
             this.agentCharacter = agentCharacter;
+        }
+
+        private void ObserveAddDamageForEnemy()
+        {
+            foreach(var enemy in enemyManager.enemies)
+            {
+                enemy.AttackerObservable
+                    .Subscribe(t =>
+                    {
+                        addDamage += t.Item2;
+                    })
+                    .AddTo(this);
+            }
         }
 
         public override void OnEpisodeBegin()

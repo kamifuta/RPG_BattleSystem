@@ -15,14 +15,14 @@ namespace InGame.Buttles.Actions
     {
         public static void NormalAttack(BaseCharacter actor, BaseCharacter target)
         {
-            LogWriter.WriteLog($"{actor.characterName}の攻撃");
+            //LogWriter.WriteLog($"{actor.characterName}の攻撃");
 
             target.ApplyDamage(new Damage(actor, actor.characterStatus.AttackValue, DamageTargetType.HP, AttackType.Physics, DamageAttributeType.None));
         }
 
         public static void Defence(BaseCharacter actor)
         {
-            LogWriter.WriteLog($"{actor.characterName}は身を守っている");
+            //LogWriter.WriteLog($"{actor.characterName}は身を守っている");
 
             actor.characterStatus.characterBuff.SetIsDefencing(true);
         }
@@ -31,7 +31,7 @@ namespace InGame.Buttles.Actions
         {
             var item = ItemDataBase.GetItemData(itemType);
 
-            LogWriter.WriteLog($"{actor.characterName}は{item.itemName}を使用した");
+            //LogWriter.WriteLog($"{actor.characterName}は{item.itemName}を使用した");
             
             item.ExecuteEffect(target);
             (actor as PlayableCharacter).RemoveItem(itemType);
@@ -41,7 +41,7 @@ namespace InGame.Buttles.Actions
         {
             var skill = SkillDataBase.GetSkillData(skillType);
 
-            LogWriter.WriteLog($"{actor.characterName}の{skill.skillName}");
+            //LogWriter.WriteLog($"{actor.characterName}の{skill.skillName}");
 
             skill.ExecuteSkill(actor, target);
         }
@@ -50,7 +50,7 @@ namespace InGame.Buttles.Actions
         {
             var magic = MagicDataBase.GetMagicData(magicType);
 
-            LogWriter.WriteLog($"{actor.characterName}の{magic.magicName}");
+            //LogWriter.WriteLog($"{actor.characterName}の{magic.magicName}");
 
             magic.ExecuteMagic(actor, target);
         }

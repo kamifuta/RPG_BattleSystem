@@ -15,14 +15,14 @@ namespace InGame.Buttles
         public void StartTurn()
         {
             turnCount = 1;
-            LogWriter.WriteLog($"ターン{ turnCount}開始");
+            //LogWriter.WriteLog($"ターン{ turnCount.ToString()}開始");
         }
 
         public void NextTurn()
         {
-            LogWriter.WriteLog($"ターン{ turnCount}終了\n");
+            //LogWriter.WriteLog($"ターン{ turnCount.ToString()}終了\n");
             turnCount++;
-            LogWriter.WriteLog($"ターン{ turnCount}開始");
+            //LogWriter.WriteLog($"ターン{ turnCount.ToString()}開始");
         }
     }
 }

@@ -43,6 +43,10 @@ namespace InGame.Buttles
         private int battleCount = 0;
         private int winCount = 0;
 
+        public static int s_id;
+        private int id;
+        private string fileName;
+
         private bool IsBattle = false;
 
         private ISubject<ResultType> resultSubject = new Subject<ResultType>();
@@ -52,14 +56,18 @@ namespace InGame.Buttles
         {
             this.enemyFactory = enemyFactory;
             this.playerAgentFactory = playerAgentFactory;
+            this.id = s_id;
+            s_id++;
         }
 
         public void SetPartyCharacters(PlayableCharacter[] partyCharacters)
         {
             DestroyAgentObject();
             partyManager = new PartyManager(partyCharacters);
-            foreach (var character in partyCharacters)
+            var length = partyCharacters.Length;
+            for(int i=0;i<length;i++)
             {
+                var character = partyCharacters[i];
                 var agent = playerAgentFactory.GeneratePlayerAgent(character);
                 agentGroup.RegisterAgent(agent);
             }
@@ -70,21 +78,26 @@ namespace InGame.Buttles
         /// </summary>
         public void Encount()
         {
-            LogWriter.SetFileName();
+            //LogWriter.SetFileName();
             IsBattle = true;
 
             //他クラスの初期化
             enemyManager = new EnemyManager(enemyFactory, partyManager);
-            foreach(var agent in agentGroup.GetRegisteredAgents())
+            GenerateEnemies(EnemyType.Golem);
+
+            foreach (var agent in agentGroup.GetRegisteredAgents())
             {
                 (agent as PlayerAgent).Init(partyManager, enemyManager, playableCharacterActionManager);
             }
             resultSubject = new Subject<ResultType>();
 
+            fileName = $"LogFile_{id.ToString()}_{battleCount.ToString()}";
+
             //フィールドの生成
-            GenerateEnemies(EnemyType.Golem);
             LogCharacterStatus();
             turnManager.StartTurn();
+
+            
 
             //戦闘を開始する
             StartBattle();
@@ -138,8 +151,6 @@ namespace InGame.Buttles
                 if (!IsBattle)
                     break;
 
-                await UniTask.DelayFrame(1, cancellationToken: token);
-                
                 //ターン終了時の処理
                 ClearCharacterBuff();
                 turnManager.NextTurn();
@@ -303,8 +314,9 @@ namespace InGame.Buttles
         /// </summary>
         private void ClearCharacterBuff()
         {
-            foreach (var character in AllCharacters)
+            for (int i = 0; i < 4; i++)
             {
+                var character = partyManager.partyCharacters[i];
                 character.characterStatus.characterBuff.SetIsDefencing(false);
             }
         }
@@ -325,13 +337,13 @@ namespace InGame.Buttles
             {
                 case ResultType.Win:
                     Debug.Log("勝利");
-                    LogWriter.WriteLog($"\n勝利");
+                    LogWriter.WriteLog($"\n勝利", fileName);
                     agentGroup.SetGroupReward(1f);
                     winCount++;
                     break;
                 case ResultType.Lose:
                     Debug.Log("敗北");
-                    LogWriter.WriteLog($"\n負け");
+                    LogWriter.WriteLog($"\n負け", fileName);
                     agentGroup.SetGroupReward(-1f);
                     break;
             }
@@ -349,32 +361,29 @@ namespace InGame.Buttles
         }
 
         /// <summary>
-        /// 敵味方すべてのキャラクターのリストを返す
-        /// </summary>
-        private IEnumerable<BaseCharacter> AllCharacters
-            => enemyManager.enemies.Cast<BaseCharacter>().Concat(partyManager.partyCharacters);
-
-        /// <summary>
         /// 敵味方のステータスをすべて書き込む
         /// </summary>
         private void LogCharacterStatus()
         {
-            LogWriter.WriteLog($"味方のステータス--------------------");
-            foreach(var character in partyManager.partyCharacters)
+            LogWriter.WriteLog($"味方のステータス--------------------", fileName);
+            for(int i = 0; i < 4; i++)
             {
-                LogWriter.WriteLog($"({character.characterName.ToString()}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()} " +
+                var character = partyManager.partyCharacters[i];
+                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()} " +
                     $"攻撃力{character.characterStatus.AttackValue.ToString()} 魔力{character.characterStatus.MagicValue.ToString()} 防御力{character.characterStatus.DefecnceValue.ToString()} 魔法防御力{character.characterStatus.MagicDefecnceValue.ToString()} 素早さ{character.characterStatus.Agility.ToString()}" +
-                    $"スキル({character.rememberSkills.Enumerate()}) 魔法({character.rememberMagics.Enumerate()})");
+                    $"スキル({character.rememberSkills.Enumerate()}) 魔法({character.rememberMagics.Enumerate()})", fileName);
             }
-            LogWriter.WriteLog($"------------------------------------");
+            LogWriter.WriteLog($"------------------------------------", fileName);
 
-            LogWriter.WriteLog($"敵のステータス--------------------");
-            foreach(var enemy in enemyManager.enemies)
+            LogWriter.WriteLog($"敵のステータス--------------------", fileName);
+            var count = enemyManager.enemies.Length;
+            for(int i = 0; i < count; i++)
             {
-                LogWriter.WriteLog($"({enemy.characterName.ToString()}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()} " +
-                    $"攻撃力{enemy.characterStatus.AttackValue.ToString()} 魔力{enemy.characterStatus.MagicValue.ToString()} 防御力{enemy.characterStatus.DefecnceValue.ToString()} 魔法防御力{enemy.characterStatus.MagicDefecnceValue.ToString()} 素早さ{enemy.characterStatus.Agility.ToString()}");
+                var enemy = enemyManager.enemies[i];
+                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()} " +
+                    $"攻撃力{enemy.characterStatus.AttackValue.ToString()} 魔力{enemy.characterStatus.MagicValue.ToString()} 防御力{enemy.characterStatus.DefecnceValue.ToString()} 魔法防御力{enemy.characterStatus.MagicDefecnceValue.ToString()} 素早さ{enemy.characterStatus.Agility.ToString()}", fileName);
             }
-            LogWriter.WriteLog($"------------------------------------");
+            LogWriter.WriteLog($"------------------------------------", fileName);
         }
 
         /// <summary>
@@ -383,27 +392,33 @@ namespace InGame.Buttles
         /// </summary>
         private void LogCharacterHPAndMP()
         {
-            LogWriter.WriteLog($"味方のステータス--------------------");
-            foreach (var character in partyManager.partyCharacters)
+            LogWriter.WriteLog($"味方のステータス--------------------", fileName);
+            for (int i = 0; i < 4; i++)
             {
-                LogWriter.WriteLog($"({character.characterName.ToString()}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()}" +
-                    $"所持アイテム({character.HaveItemList.Enumerate()})");
+                var character = partyManager.partyCharacters[i];
+                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()}" +
+                    $"所持アイテム({character.HaveItemList.Enumerate()})", fileName);
             }
-            LogWriter.WriteLog($"------------------------------------");
+            LogWriter.WriteLog($"------------------------------------", fileName);
 
-            LogWriter.WriteLog($"敵のステータス--------------------");
-            foreach (var enemy in enemyManager.enemies)
+            LogWriter.WriteLog($"敵のステータス--------------------", fileName);
+            var count = enemyManager.enemies.Length;
+            for (int i = 0; i < count; i++)
             {
-                LogWriter.WriteLog($"({enemy.characterName.ToString()}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()}");
+                var enemy = enemyManager.enemies[i];
+                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()}", fileName);
             }
-            LogWriter.WriteLog($"------------------------------------");
+            LogWriter.WriteLog($"------------------------------------", fileName);
         }
 
         private void DestroyAgentObject()
         {
-            var agentList = agentGroup.GetRegisteredAgents().ToArray();
-            foreach (var agent in agentList)
+            var agentArray = agentGroup.GetRegisteredAgents().ToArray();
+            if (agentArray.Length <= 0)
+                return;
+            for(int i = 0; i < 4; i++)
             {
+                var agent = agentArray[i];
                 agentGroup.UnregisterAgent(agent);
                 playerAgentFactory.DestroyPlayerAgent(agent as PlayerAgent);
             }

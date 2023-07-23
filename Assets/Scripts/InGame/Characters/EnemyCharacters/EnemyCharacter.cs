@@ -24,10 +24,10 @@ namespace InGame.Characters.Enemies
             var damageValue = CalcDamage(damage);
             characterHealth.ApplyDamage(damageValue);
             attackerSubject.OnNext((damage.attacker as PlayableCharacter, damageValue));
-            LogWriter.WriteLog($"{characterName}に{damageValue}のダメージ");
+            //LogWriter.WriteLog($"{characterName}に{damageValue.ToString()}のダメージ");
 
-            if (characterHealth.IsDead)
-                LogWriter.WriteLog($"{characterName}は倒れた");
+            //if (characterHealth.IsDead)
+                //LogWriter.WriteLog($"{characterName}は倒れた");
         }
     }
 }

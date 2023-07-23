@@ -12,7 +12,7 @@ namespace PCGs
 {
     public class CharacterManager
     {
-        private readonly List<CharacterStatus> playableCharacterStatusList = new List<CharacterStatus>();
+        private readonly List<CharacterStatus> playableCharacterStatusList = new List<CharacterStatus>(12);
         public IReadOnlyList<CharacterStatus> PlayableCharacterStatusList => playableCharacterStatusList;
 
         private readonly CharacterStatusData characterStatusData;

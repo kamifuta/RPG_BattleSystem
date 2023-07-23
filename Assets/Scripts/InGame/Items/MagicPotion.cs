@@ -23,7 +23,7 @@ namespace InGame.Items
         {
             if (target.characterHealth.IsDead)
             {
-                LogWriter.WriteLog("‚µ‚©‚µ‰½‚à‹N‚±‚ç‚È‚©‚Á‚½");
+                //LogWriter.WriteLog("‚µ‚©‚µ‰½‚à‹N‚±‚ç‚È‚©‚Á‚½");
                 return;
             }
 
