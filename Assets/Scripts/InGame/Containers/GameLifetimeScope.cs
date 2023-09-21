@@ -14,7 +14,6 @@ namespace InGame.Containers
 {
     public class GameLifetimeScope : LifetimeScope
     {
-        [SerializeField] private EncountView encountView;
         [SerializeField] private PlayerAgentFactory playerAgentFactory;
 
         [SerializeField] private EnemyStatusDataTable enemyStatusDataTable;
@@ -24,7 +23,7 @@ namespace InGame.Containers
 
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.RegisterEntryPoint<EncountPresenter>();
+            //builder.RegisterEntryPoint<EncountPresenter>();
             builder.RegisterEntryPoint<ParameterSearcher>();
 
             builder.Register<FieldManager>(Lifetime.Singleton);
@@ -34,7 +33,7 @@ namespace InGame.Containers
                 .WithParameter("enemyStatusDataTable", enemyStatusDataTable);
                 //.WithParameter("playerAgentFactory", playerAgentFactory);
 
-            builder.RegisterComponent(encountView);
+
             builder.RegisterComponent(playerAgentFactory);
         }
     }

@@ -38,7 +38,7 @@ namespace PCGs
         public float EvaluateSynergy(IEnumerable<Party> parties)
         {
             float synergyPoint = 0f;
-            Debug.Log(parties.Count());
+            //Debug.Log(parties.Count());
 
             foreach (var party in parties)
             {

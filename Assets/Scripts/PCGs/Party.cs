@@ -9,6 +9,7 @@ namespace PCGs
     {
         public PlayableCharacter[] partyCharacters { get; private set; }
         public float winningParcentage { get; private set; }
+        public bool IsSimulated { get; private set; }
 
         public Party(PlayableCharacter[] partyCharacters)
         {
@@ -18,6 +19,11 @@ namespace PCGs
         public void SetWinningParcentage(float winningParcentage)
         {
             this.winningParcentage = winningParcentage;
+        }
+
+        public void SetIsSimulated(bool value)
+        {
+            IsSimulated = value;
         }
     }
 }

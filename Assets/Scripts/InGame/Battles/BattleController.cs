@@ -336,13 +336,13 @@ namespace InGame.Buttles
             switch (result)
             {
                 case ResultType.Win:
-                    Debug.Log("èüóò");
+                    Debug.Log("<color=red>èüóò</color>");
                     LogWriter.WriteLog($"\nèüóò", fileName);
                     agentGroup.SetGroupReward(1f);
                     winCount++;
                     break;
                 case ResultType.Lose:
-                    Debug.Log("îsñk");
+                    Debug.Log("<color=blue>îsñk</color>");
                     LogWriter.WriteLog($"\nïâÇØ", fileName);
                     agentGroup.SetGroupReward(-1f);
                     break;
@@ -350,8 +350,8 @@ namespace InGame.Buttles
 
             enemyManager.Dispose();
             
-            Debug.Log("Finish Battle");
-            Debug.Log("èüó¶ÅF" + (float)winCount / battleCount);
+            //Debug.Log("Finish Battle");
+            //Debug.Log("èüó¶ÅF" + (float)winCount / battleCount);
             LogCharacterStatus();
 
             agentGroup.EndGroupEpisode();
@@ -426,6 +426,8 @@ namespace InGame.Buttles
 
         public void Dispose()
         {
+            DestroyAgentObject();
+
             cancellationTokenSource?.Cancel();
             enemyManager?.Dispose();
         }

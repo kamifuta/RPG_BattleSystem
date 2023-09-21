@@ -28,11 +28,12 @@ namespace PCGs
         private readonly PlayerAgentFactory playerAgentFactory;
 
         private EvaluationFunctions evaluationFunctions=new EvaluationFunctions();
-
+        private List<Party> partyList = new List<Party>(128);
         private CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-        private readonly int searchTimes = 5000;
-        private readonly int battleTimes = 10;
+        private readonly int searchTimes = 1000;
+        private readonly int battleTimes = 5;
+        private readonly int characterCount = 8;
 
         [Inject]
         public ParameterSearcher(CharacterManager characterManager, EnemyFactory enemyFactory, PlayerAgentFactory playerAgentFactory)
@@ -50,7 +51,7 @@ namespace PCGs
         public async UniTaskVoid StartSearch()
         {
             //プレイヤーキャラクターを生成する
-            characterManager.GenerateCharacterStatuses(10);
+            characterManager.GenerateCharacterStatuses(characterCount);
             LogParameter();
 
             BattleController.s_id = 0;
@@ -61,58 +62,24 @@ namespace PCGs
             for (int i = 0; i < searchTimes; i++)
             {
                 //調整の対象となるキャラクターをランダムに取得する
-                int characterIndex = Random.Range(0, 10);
+                int characterIndex = Random.Range(0, characterCount);
 
                 //調整対象となるキャラクターを含むパーティの組み合わせをすべて取得する
-                IEnumerable<IEnumerable<int>> partyCharacterIndexList = Enumerable.Range(0, 9).Combination(characterIndex, 4);
+                IEnumerable<IEnumerable<int>> partyCharacterIndexList = Enumerable.Range(0, characterCount).Combination(characterIndex, 4);
+                //Debug.Log(partyCharacterIndexList.Count());
 
-                List<Party> partyList = new List<Party>(128);
-
+                //List<Party> partyList = new List<Party>(128);
+                partyList.Clear();
 
                 //すべてのパーティに対して評価を行う
-                Parallel.ForEach(partyCharacterIndexList, async partyCharacterIndex =>
-                //foreach(var partyCharacterIndex in partyCharacterIndexList)
+                //Parallel.ForEach(partyCharacterIndexList, async partyCharacterIndex =>
+                foreach(var partyCharacterIndex in partyCharacterIndexList)
                 {
-                    PlayableCharacter[] partyCharacterArray = characterManager.GenerateCharacters(partyCharacterIndex).ToArray();
-                    var party = new Party(partyCharacterArray);
-                    partyList.Add(party);
+                    ExecuteBattle(partyCharacterIndex).Forget();
+                }
 
-                    var battleController = new BattleController(playerAgentFactory, enemyFactory);
-                    battleController.SetPartyCharacters(partyCharacterArray);
-
-                    //戦闘を行い、勝率を取得する
-                    int winCount = 0;
-                    //Parallel.For(0, battleTimes, async _ =>
-                    for (int j = 0; j < battleTimes; j++)
-                    {
-
-
-                        //バトルを実行する
-                        battleController.Encount();
-                        battleController.ResultObservable
-                            .Take(1)
-                            .Where(result => result == BattleController.ResultType.Win)
-                            .Subscribe(result =>
-                            {
-                                winCount++;
-                            });
-
-                        //バトル終了まで待機する
-                        await battleController.ResultObservable;
-
-                        //すべてのキャラクターに対して初期化する
-                        characterManager.SetItems(partyCharacterArray);
-                        for (int k = 0; k < 4; k++)
-                        {
-                            partyCharacterArray[k].FullHeal();
-                        }
-
-                    }
-
-                    party.SetWinningParcentage((float)winCount / battleTimes);
-                    Debug.Log(party.winningParcentage.ToString());
-                    battleController?.Dispose();
-                });
+                await UniTask.WaitUntil(() => partyList.TrueForAll(x => x.IsSimulated), cancellationToken:tokenSource.Token);
+                Debug.Log("Finish First half of Battle");
 
                 var characterStatus = characterManager.PlayableCharacterStatusList[characterIndex];
 
@@ -135,53 +102,18 @@ namespace PCGs
 
                 characterManager.AddNewCharacterStatus(variantStatus);
 
-                partyCharacterIndexList = Enumerable.Range(0, 10).Combination(10, new int[1] { characterIndex }, 4);
+                partyCharacterIndexList = Enumerable.Range(0, characterCount+1).Combination(characterCount, new int[1] { characterIndex }, 4);
                 partyList.Clear();
 
                 //すべてのパーティに対して評価を行う
                 //Parallel.ForEach(partyCharacterIndexList, async partyCharacterIndex =>
                 foreach (var partyCharacterIndex in partyCharacterIndexList)
                 {
-                    PlayableCharacter[] partyCharacterArray = characterManager.GenerateCharacters(partyCharacterIndex).ToArray();
-                    var party = new Party(partyCharacterArray);
-                    partyList.Add(party);
-
-                    var battleController = new BattleController(playerAgentFactory, enemyFactory);
-                    battleController.SetPartyCharacters(partyCharacterArray);
-
-                    int winCount = 0;
-                    //Parallel.For(0, battleTimes, async _ =>
-                    for (int j = 0; j < battleTimes; j++)
-                    {
-                        
-
-                        //バトルを実行する
-                        battleController.Encount();
-                        battleController.ResultObservable
-                            .Take(1)
-                            .Where(result => result == BattleController.ResultType.Win)
-                            .Subscribe(result =>
-                            {
-                                winCount++;
-                            });
-
-                        //バトル終了まで待機する
-                        await battleController.ResultObservable;
-
-                        //すべてのキャラクターに対して初期化する
-                        characterManager.SetItems(party.partyCharacters);
-                        for (int k = 0; k < 4; k++)
-                        {
-                            party.partyCharacters[k].FullHeal();
-                        }
-
-                        
-                    }
-
-                    party.SetWinningParcentage((float)winCount / battleTimes);
-                    battleController?.Dispose();
-                    
+                    ExecuteBattle(partyCharacterIndex).Forget();
                 }
+
+                await UniTask.WaitUntil(() => partyList.TrueForAll(x => x.IsSimulated), cancellationToken: tokenSource.Token);
+                Debug.Log("Finish Last half of Battle");
 
                 //突然変異したキャラクターを評価する
                 var variantSynergyPoint = evaluationFunctions.EvaluateSynergy(partyList);
@@ -204,6 +136,48 @@ namespace PCGs
             }
 
             //battleController.Dispose();
+        }
+
+        private async UniTask ExecuteBattle(IEnumerable<int> partyCharacterIndex)
+        {
+            PlayableCharacter[] partyCharacterArray = characterManager.GenerateCharacters(partyCharacterIndex).ToArray();
+            var party = new Party(partyCharacterArray);
+            partyList.Add(party);
+
+            var battleController = new BattleController(playerAgentFactory, enemyFactory);
+            battleController.SetPartyCharacters(partyCharacterArray);
+
+            //戦闘を行い、勝率を取得する
+            int winCount = 0;
+            //Parallel.For(0, battleTimes, async _ =>
+            for (int j = 0; j < battleTimes; j++)
+            {
+                //バトルを実行する
+                battleController.Encount();
+                battleController.ResultObservable
+                    .Take(1)
+                    .Where(result => result == BattleController.ResultType.Win)
+                    .Subscribe(result =>
+                    {
+                        winCount++;
+                    });
+
+                //バトル終了まで待機する
+                await battleController.ResultObservable;
+
+                //すべてのキャラクターに対して初期化する
+                characterManager.SetItems(partyCharacterArray);
+                for (int k = 0; k < 4; k++)
+                {
+                    partyCharacterArray[k].FullHeal();
+                }
+
+            }
+
+            party.SetWinningParcentage((float)winCount / battleTimes);
+            Debug.Log($"勝率:{party.winningParcentage.ToString()}");
+            party.SetIsSimulated(true);
+            battleController?.Dispose();
         }
 
         private void LogParameter()

@@ -46,7 +46,6 @@ namespace MyUtil
 
         public static IEnumerable<IEnumerable<T>> Combination<T>(this IEnumerable<T> list, T containElement, int k)
         {
-            int i = 1;
             IEnumerable<T> operatedList = list.Where(x => !x.Equals(containElement));
             foreach (var combinationList in Combination(operatedList, k - 1))
             {

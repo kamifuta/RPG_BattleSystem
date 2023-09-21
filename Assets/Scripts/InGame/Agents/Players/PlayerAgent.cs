@@ -39,13 +39,16 @@ namespace InGame.Agents.Players
         private const int PlayerAction = 5;
 
         private int addDamage = 0;
+        private IDisposable disposable;
 
         public void Init(PartyManager partyManager, EnemyManager enemyManager, PlayableCharacterActionManager playableCharacterActionManager)
         {
             this.partyManager = partyManager;
             this.enemyManager = enemyManager;
             this.playableCharacterActionManager = playableCharacterActionManager;
+            addDamage = 0;
 
+            disposable?.Dispose();
             ObserveAddDamageForEnemy();
         }
 
@@ -58,7 +61,8 @@ namespace InGame.Agents.Players
         {
             foreach(var enemy in enemyManager.enemies)
             {
-                enemy.AttackerObservable
+                disposable= enemy.AttackerObservable
+                    .Where(t=>t.Item1==agentCharacter)
                     .Subscribe(t =>
                     {
                         addDamage += t.Item2;
@@ -76,6 +80,7 @@ namespace InGame.Agents.Players
         {
             sensor.AddObservation(partyManager.partyCharacters.Select(x => x.HPRate).ToList());
             sensor.AddObservation(partyManager.partyCharacters.Select(x => x.MPRate).ToList());
+            sensor.AddObservation(addDamage);
         }
 
         public override void WriteDiscreteActionMask(IDiscreteActionMask actionMask)
