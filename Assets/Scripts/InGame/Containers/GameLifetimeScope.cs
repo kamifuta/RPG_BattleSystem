@@ -23,7 +23,6 @@ namespace InGame.Containers
 
         protected override void Configure(IContainerBuilder builder)
         {
-            //builder.RegisterEntryPoint<EncountPresenter>();
             builder.RegisterEntryPoint<ParameterSearcher>();
 
             builder.Register<FieldManager>(Lifetime.Singleton);
@@ -31,8 +30,6 @@ namespace InGame.Containers
 
             builder.Register<EnemyFactory>(Lifetime.Transient)
                 .WithParameter("enemyStatusDataTable", enemyStatusDataTable);
-                //.WithParameter("playerAgentFactory", playerAgentFactory);
-
 
             builder.RegisterComponent(playerAgentFactory);
         }

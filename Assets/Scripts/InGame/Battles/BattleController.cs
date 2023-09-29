@@ -29,39 +29,40 @@ namespace InGame.Buttles
         }
 
         private EnemyManager enemyManager;
-        private readonly TurnManager turnManager = new TurnManager();
+        private PartyManager partyManager;
+
         private PlayableCharacterActionManager playableCharacterActionManager = new PlayableCharacterActionManager();
 
         private readonly EnemyFactory enemyFactory;
         private readonly PlayerAgentFactory playerAgentFactory;
-        private PartyManager partyManager;
+
+        private readonly TurnManager turnManager = new TurnManager();
         private readonly SimpleMultiAgentGroup agentGroup = new SimpleMultiAgentGroup();
 
         private List<BaseCharacter> hadDoneActionCharacterList= new List<BaseCharacter>();
         private CancellationTokenSource cancellationTokenSource;
 
         private int battleCount = 0;
-        private int winCount = 0;
-
-        public static int s_id;
-        private int id;
+        private readonly int id=0;
         private string fileName;
 
         private bool IsBattle = false;
 
-        private ISubject<ResultType> resultSubject = new Subject<ResultType>();
+        private Subject<ResultType> resultSubject;
         public IObservable<ResultType> ResultObservable => resultSubject;
 
-        public BattleController(PlayerAgentFactory playerAgentFactory, EnemyFactory enemyFactory)
+        public BattleController(PlayerAgentFactory playerAgentFactory, EnemyFactory enemyFactory, PlayableCharacter[] partyCharacters, int battleID)
         {
             this.enemyFactory = enemyFactory;
             this.playerAgentFactory = playerAgentFactory;
-            this.id = s_id;
-            s_id++;
+            this.id = battleID;
+
+            SetPartyCharacters(partyCharacters);
         }
 
         public void SetPartyCharacters(PlayableCharacter[] partyCharacters)
         {
+            //プレイヤーに応じたエージェントを生成する
             DestroyAgentObject();
             partyManager = new PartyManager(partyCharacters);
             var length = partyCharacters.Length;
@@ -78,7 +79,6 @@ namespace InGame.Buttles
         /// </summary>
         public void Encount()
         {
-            //LogWriter.SetFileName();
             IsBattle = true;
 
             //他クラスの初期化
@@ -96,8 +96,6 @@ namespace InGame.Buttles
             //フィールドの生成
             LogCharacterStatus();
             turnManager.StartTurn();
-
-            
 
             //戦闘を開始する
             StartBattle();
@@ -120,6 +118,7 @@ namespace InGame.Buttles
         private void StartBattle()
         {
             cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
             cancellationTokenSource = new CancellationTokenSource();
             ProcessBattle(cancellationTokenSource.Token).Forget();
         }
@@ -142,9 +141,12 @@ namespace InGame.Buttles
 
                 //エージェントに行動を決定させる
                 SelectPlayableCharactersAction();
-                
+
                 //すべてのエージェントが行動を決定するまで待機
-                await UniTask.WaitUntil(() => agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().All(x=>x.HadSelectedAction), cancellationToken:token);
+                //await UniTask.Delay(TimeSpan.FromSeconds(0.2f), cancellationToken: token);
+                var agentList = agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().ToArray();
+                await UniTask.WaitUntil(() => agentList.All(x=>x.HadSelectedAction), cancellationToken:token);
+                //await WaitSelectAction(token);
 
                 //キャラクターの行動を実行する
                 ExecuteActions();
@@ -158,6 +160,18 @@ namespace InGame.Buttles
                 {
                     (agent as PlayerAgent).ClearFlag();
                 }
+            }
+        }
+
+        private async UniTask WaitSelectAction(CancellationToken token)
+        {
+            var agentList = agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().ToArray();
+
+            while (true)
+            {
+                if (agentList.All(x => x.HadSelectedAction))
+                    return;
+                await UniTask.Yield(token);
             }
         }
 
@@ -192,10 +206,16 @@ namespace InGame.Buttles
             IEnumerable<BaseCharacter> sortedCharacters = defenceActionCharacters.Concat(highPriorityActionCharacters).Concat(normalPriorityActionCharacters).Concat(lowPriorityActionCharacters);
             foreach(var character in sortedCharacters)
             {
-                ExecuteCharacterAction(character);
-
                 if (!IsBattle)
                     return;
+                try
+                {
+                    ExecuteCharacterAction(character);
+                }
+                catch (InvalidOperationException)
+                {
+                    return;
+                }
             }
         }
 
@@ -328,6 +348,7 @@ namespace InGame.Buttles
         private void FinishBattle(ResultType result)
         {
             cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
             cancellationTokenSource = null;
 
             battleCount++;
@@ -339,7 +360,6 @@ namespace InGame.Buttles
                     Debug.Log("<color=red>勝利</color>");
                     LogWriter.WriteLog($"\n勝利", fileName);
                     agentGroup.SetGroupReward(1f);
-                    winCount++;
                     break;
                 case ResultType.Lose:
                     Debug.Log("<color=blue>敗北</color>");
@@ -349,11 +369,7 @@ namespace InGame.Buttles
             }
 
             enemyManager.Dispose();
-            
-            //Debug.Log("Finish Battle");
-            //Debug.Log("勝率：" + (float)winCount / battleCount);
             LogCharacterStatus();
-
             agentGroup.EndGroupEpisode();
 
             resultSubject.OnNext(result);
@@ -418,9 +434,16 @@ namespace InGame.Buttles
                 return;
             for(int i = 0; i < 4; i++)
             {
-                var agent = agentArray[i];
-                agentGroup.UnregisterAgent(agent);
-                playerAgentFactory.DestroyPlayerAgent(agent as PlayerAgent);
+                try
+                {
+                    var agent = agentArray[i];
+                    agentGroup.UnregisterAgent(agent);
+                    playerAgentFactory.DestroyPlayerAgent(agent as PlayerAgent);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    break;
+                }
             }
         }
 
@@ -429,6 +452,8 @@ namespace InGame.Buttles
             DestroyAgentObject();
 
             cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
+            resultSubject.Dispose();
             enemyManager?.Dispose();
         }
     }

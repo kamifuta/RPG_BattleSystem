@@ -1,0 +1,60 @@
+﻿@startuml RPG_BattleSystem
+
+namespace MLAgents{
+    class Agent
+}
+
+namespace Characters{
+
+    class CharacterStatus{
+        int MaxHP
+        int MaxMP
+        int AttackValue
+        int MagicAttackValue
+        int DefenceValue
+        int MagicDefenceValue
+        int Agility
+    }
+
+    namespace Playable{
+        class PlayableCharacterManager
+        class PlayableCharacterGenerator
+        class PlayableCharacter
+        class PlayableCharacterAgent
+
+        PlayableCharacterManager-->PlayableCharacter
+        PlayableCharacterManager-->PlayableCharacterGenerator
+        PlayableCharacterGenerator-->PlayableCharacter
+        PlayableCharacterAgent-->PlayableCharacter
+    }
+
+    namespace Enemies{
+        class EnemyManager
+        class EnemyGenerator
+        class Enemy
+        class EnemyAI
+
+        EnemyManager-->Enemy
+        EnemyManager-->EnemyGenerator
+        EnemyGenerator-->Enemy
+        EnemyAI-->Enemy
+    }
+
+    Characters.Playable.PlayableCharacter-->CharacterStatus
+    Characters.Enemies.Enemy-->CharacterStatus
+}
+
+namespace Battle{
+    class BattleController
+}
+
+namespace PCGs{
+    class ParameterSearcher
+    class EvaluationFunctions
+}
+
+MLAgents.Agent<|--Characters.Playable.PlayableCharacterAgent
+
+PCGs.ParameterSearcher-->Characters.CharacterStatus
+
+@enduml

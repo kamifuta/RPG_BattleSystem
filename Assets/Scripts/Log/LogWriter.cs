@@ -34,6 +34,7 @@ namespace Log
             StreamWriter writer = new StreamWriter(fileName, true, encoding);
             writer.WriteLine($"{log}");
             writer.Close();
+            writer.Dispose();
         }
     }
 }
