@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using MyUtil;
 using System.Linq;
+using Log;
 
 namespace PCGs
 {
@@ -13,16 +14,7 @@ namespace PCGs
 
         private void Start()
         {
-            statusList.Add(new CharacterStatus(302, 492, 79, 447, 225, 343, 115));
-            statusList.Add(new CharacterStatus(179, 481, 212, 235, 296, 378, 155));
-            statusList.Add(new CharacterStatus(601, 112, 266, 331, 234, 386, 85));
-            statusList.Add(new CharacterStatus(219, 156, 627, 225, 83, 197, 175));
-            statusList.Add(new CharacterStatus(172, 131, 230, 140, 387, 466, 119));
-            statusList.Add(new CharacterStatus(551, 232, 279, 118, 104, 141, 93));
-            statusList.Add(new CharacterStatus(631, 187, 96, 330, 562, 103, 100));
-            statusList.Add(new CharacterStatus(499, 356, 585, 178, 253, 375, 56));
-            //statusList.Add(new CharacterStatus(328,345,78,401,98,303,150));
-            //statusList.Add(new CharacterStatus(230,111,179,219,463,128,228));
+            LoadJSON();
 
             var list = statusList.Combination(2);
             foreach(var e in list)
@@ -31,8 +23,28 @@ namespace PCGs
                 var cosineSimilarity=CalcCosineSimilarity(pair[0], pair[1]);
                 Debug.Log($"{statusList.IndexOf(pair[0])}:{statusList.IndexOf(pair[1])} {cosineSimilarity}");
             }
+        }
 
-            Debug.Log(CalcCosineSimilarity(statusList[0], statusList[0]));
+        private void LoadJSON()
+        {
+            if (!PCGLog.CheckExistJsonFile())
+            {
+                Debug.Log("ステータスファイルが存在しません");
+                return;
+            }
+
+            var statusJSONs = PCGLog.ReadJSONLog().Split("\n");
+
+            for (int i = 0; i < statusJSONs.Length - 2; i++)
+            {
+                var json = statusJSONs[i];
+                Debug.Log(json);
+                var logStatus = JsonUtility.FromJson<LogStatus>(json);
+                var status = new CharacterStatus(logStatus.MaxHP, logStatus.MaxMP, logStatus.AttackValue, logStatus.MagicValue, logStatus.DefenceValue, logStatus.MagicDefenceValue, logStatus.Agility);
+                statusList.Add(status);
+            }
+
+            Debug.Log("ステータスの読み込みが完了しました");
         }
 
         private float CalcVectorSize(CharacterStatus status)

@@ -18,6 +18,9 @@ namespace InGame.Agents.Players
 
         public void DestroyPlayerAgent(PlayerAgent playerAgent)
         {
+            if (playerAgent == null)
+                return;
+
             Destroy(playerAgent.gameObject);
         }
     }

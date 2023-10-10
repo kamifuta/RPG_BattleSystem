@@ -15,6 +15,7 @@ using VContainer.Unity;
 using Log;
 using System.Text;
 using InGame.Agents.Players;
+using UnityEngine.SceneManagement;
 
 namespace PCGs
 {
@@ -36,6 +37,8 @@ namespace PCGs
         private int battleID = 0;
         private int searchCount = 0;
 
+        private bool IsDisposed = false;
+
         [Inject]
         public ParameterSearcher(CharacterManager characterManager, EnemyFactory enemyFactory, PlayerAgentFactory playerAgentFactory)
         {
@@ -55,9 +58,13 @@ namespace PCGs
             if (!PCGLog.CheckExistJsonFile())
             {
                 Debug.Log("ステータスファイルが存在しません");
+                //プレイヤーキャラクターのステータスを生成する
+                characterManager.GenerateCharacterStatuses(characterCount);
+                LogParameter();
                 return;
             }
 
+            characterManager.ClearStatusList();
             var statusJSONs = PCGLog.ReadJSONLog().Split("\n");
 
             for (int i = 0; i < characterCount; i++)
@@ -74,12 +81,8 @@ namespace PCGs
 
         public async UniTaskVoid StartSearch()
         {
-            //プレイヤーキャラクターを生成する
-            characterManager.GenerateCharacterStatuses(characterCount);
-            LogParameter();
-
             //探索を行う
-            for (int i = 0; i < searchTimes; i++)
+            for (int i = searchCount; i < searchTimes; i++)
             {
                 //調整の対象となるキャラクターをランダムに取得する
                 int characterIndex = Random.Range(0, characterCount);
@@ -156,6 +159,13 @@ namespace PCGs
 
                 LogParameter();
                 searchCount = i;
+
+                if (searchCount !=0 && searchCount % 100 == 0)
+                {
+                    Dispose();
+                    await SceneManager.LoadSceneAsync("SampleScene");
+                    return;
+                }
             }
         }
 
@@ -250,37 +260,22 @@ namespace PCGs
             Debug.Log("Jsonに保存されました");
         }
 
-        [Serializable]
-        private class LogStatus
-        {
-            public int MaxHP;
-            public int MaxMP;
-            public int AttackValue;
-            public int MagicValue;
-            public int DefenceValue;
-            public int MagicDefenceValue;
-            public int Agility;
-
-            public LogStatus(int maxHP, int maxMP, int attack, int magic, int defence, int magicDefence, int agility)
-            {
-                MaxHP = maxHP;
-                MaxMP = maxMP;
-                AttackValue = attack;
-                MagicValue = magic;
-                DefenceValue = defence;
-                MagicDefenceValue = magicDefence;
-                Agility = agility;
-            }
-        }
-
         public void Dispose()
         {
+            if (IsDisposed)
+                return;
+
+            IsDisposed = true;
+
             LogStatusJSON();
 
             tokenSource?.Cancel();
             tokenSource?.Dispose();
 
-            disposables.Dispose();
+            if (!disposables.IsDisposed)
+            {
+                disposables.Dispose();
+            }
         }
     }
 }

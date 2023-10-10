@@ -57,12 +57,7 @@ namespace Log
         public static void DeleteJSONLog()
         {
             var fileName = $"{FolderPath}/StatusLog";
-
-            using (StreamWriter writer = new StreamWriter(fileName, false, encoding))
-            {
-                writer.Write("");
-                writer.Close();
-            }
+            File.Delete(fileName);
         }
     }
 }

@@ -112,5 +112,10 @@ namespace PCGs
                 }
             }
         }
+
+        public void ClearStatusList()
+        {
+            playableCharacterStatusList.Clear();
+        }
     }
 }
