@@ -31,7 +31,7 @@ namespace PCGs
         private CompositeDisposable disposables = new CompositeDisposable(64);
 
         private readonly int searchTimes = 1000;
-        private readonly int battleTimes = 5;
+        private readonly int battleTimes = 10;
         private readonly int characterCount = 8;
 
         private int battleID = 0;

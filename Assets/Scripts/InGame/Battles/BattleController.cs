@@ -149,7 +149,6 @@ namespace InGame.Buttles
 
                 //生きているすべてのキャラクターを素早さの順にソート
                 var sortedCharacters = allCharacters.Where(x => !x.characterHealth.IsDead).OrderByDescending(x => x.characterStatus.Agility);
-                Debug.Log(sortedCharacters.Select(x=>x.characterName).Enumerate());
 
                 //素早さが速い順に行動決定させ、実行する
                 foreach(var character in sortedCharacters)
@@ -163,6 +162,8 @@ namespace InGame.Buttles
 
                     //戦闘が終了しているかを確認する
                     CheckBattleResult();
+                    if (!IsBattle)
+                        break;
                 }
 
                 if (!IsBattle)
