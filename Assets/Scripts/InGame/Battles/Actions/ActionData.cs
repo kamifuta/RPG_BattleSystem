@@ -13,8 +13,8 @@ namespace InGame.Buttles.Actions
     {
         public BaseActionType actionType;
 
-        private readonly BaseCharacter actor;
-        private readonly BaseCharacter target;
+        public readonly BaseCharacter actor;
+        public readonly BaseCharacter target;
         public readonly ItemType itemType;
         public readonly SkillType skillType;
         public readonly MagicType magicType;

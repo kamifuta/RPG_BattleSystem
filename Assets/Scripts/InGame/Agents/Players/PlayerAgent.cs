@@ -26,7 +26,6 @@ namespace InGame.Agents.Players
 
         protected PartyManager partyManager;
         protected EnemyManager enemyManager;
-        protected PlayableCharacterActionManager playableCharacterActionManager;
 
         public Action OnEpisodeBeginEvent;
         public bool HadSelectedAction { get; private set; } = false;
@@ -41,11 +40,13 @@ namespace InGame.Agents.Players
         private int addDamage = 0;
         private IDisposable disposable;
 
-        public void Init(PartyManager partyManager, EnemyManager enemyManager, PlayableCharacterActionManager playableCharacterActionManager)
+        private Subject<ActionData> selectedActionDataSubject = new Subject<ActionData>();
+        public IObservable<ActionData> SelectedActionDataObservable => selectedActionDataSubject;
+
+        public void Init(PartyManager partyManager, EnemyManager enemyManager)
         {
             this.partyManager = partyManager;
             this.enemyManager = enemyManager;
-            this.playableCharacterActionManager = playableCharacterActionManager;
             addDamage = 0;
 
             disposable?.Dispose();
@@ -159,11 +160,9 @@ namespace InGame.Agents.Players
                     targetIndex = actionBuffers.DiscreteActions[LivingEnemyAction];
                     target = enemyManager.enemies[targetIndex];
                     action = new ActionData(BaseActionType.NormalAttack, character, target);
-                    playableCharacterActionManager.SetPlayableCharacterAction(character, action);
                     break;
                 case (int)BaseActionType.Defence:
                     action = new ActionData(BaseActionType.Defence, character);
-                    playableCharacterActionManager.SetPlayableCharacterAction(character, action);
                     break;
                 case (int)BaseActionType.UseItem:
                     var itemType = (ItemType)Enum.ToObject(typeof(ItemType), actionBuffers.DiscreteActions[ItemAction]);
@@ -188,7 +187,6 @@ namespace InGame.Agents.Players
                         case TargetType.AllEnemy:
                             break;
                     }
-                    playableCharacterActionManager.SetPlayableCharacterAction(agentCharacter, action);
                     break;
                 case (int)BaseActionType.UseSkill:
                     var skillType = (SkillType)Enum.ToObject(typeof(ItemType), actionBuffers.DiscreteActions[SkillAction]);
@@ -213,7 +211,6 @@ namespace InGame.Agents.Players
                         case TargetType.AllEnemy:
                             break;
                     }
-                    playableCharacterActionManager.SetPlayableCharacterAction(agentCharacter, action);
                     break;
                 case (int)BaseActionType.UseMagic:
                     var magicType = (MagicType)Enum.ToObject(typeof(MagicType), actionBuffers.DiscreteActions[MagicAction]);
@@ -238,10 +235,10 @@ namespace InGame.Agents.Players
                         case TargetType.AllEnemy:
                             break;
                     }
-                    playableCharacterActionManager.SetPlayableCharacterAction(agentCharacter, action);
                     break;
             }
 
+            selectedActionDataSubject.OnNext(action);
             HadSelectedAction = true;
         }
 

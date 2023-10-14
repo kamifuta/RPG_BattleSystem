@@ -24,6 +24,7 @@ namespace InGame.Containers
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterEntryPoint<ParameterSearcher>();
+            //builder.RegisterEntryPoint<BattleTester>();
 
             builder.Register<FieldManager>(Lifetime.Singleton);
             builder.Register<CharacterManager>(Lifetime.Scoped).WithParameter("characterStatusData", PCGStatusData);

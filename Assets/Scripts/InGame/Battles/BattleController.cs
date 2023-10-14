@@ -30,8 +30,7 @@ namespace InGame.Buttles
 
         private EnemyManager enemyManager;
         private PartyManager partyManager;
-
-        private PlayableCharacterActionManager playableCharacterActionManager = new PlayableCharacterActionManager();
+        private IEnumerable<BaseCharacter> allCharacters;
 
         private readonly EnemyFactory enemyFactory;
         private readonly PlayerAgentFactory playerAgentFactory;
@@ -39,7 +38,6 @@ namespace InGame.Buttles
         private readonly TurnManager turnManager = new TurnManager();
         private readonly SimpleMultiAgentGroup agentGroup = new SimpleMultiAgentGroup();
 
-        private List<BaseCharacter> hadDoneActionCharacterList= new List<BaseCharacter>();
         private CancellationTokenSource cancellationTokenSource;
 
         private int battleCount = 0;
@@ -47,6 +45,9 @@ namespace InGame.Buttles
         private string fileName;
 
         private bool IsBattle = false;
+        private bool IsWaitingPlayerDecision = false;
+
+        private ActionData selectedPlayerActionData = null;
 
         private Subject<ResultType> resultSubject;
         public IObservable<ResultType> ResultObservable => resultSubject;
@@ -71,6 +72,14 @@ namespace InGame.Buttles
                 var character = partyCharacters[i];
                 var agent = playerAgentFactory.GeneratePlayerAgent(character);
                 agentGroup.RegisterAgent(agent);
+
+                agent.SelectedActionDataObservable
+                    .Subscribe(actionData =>
+                    {
+                        selectedPlayerActionData = actionData;
+                        IsWaitingPlayerDecision = false;
+                    })
+                    .AddTo(this);
             }
         }
 
@@ -87,7 +96,7 @@ namespace InGame.Buttles
 
             foreach (var agent in agentGroup.GetRegisteredAgents())
             {
-                (agent as PlayerAgent).Init(partyManager, enemyManager, playableCharacterActionManager);
+                (agent as PlayerAgent).Init(partyManager, enemyManager);
             }
             resultSubject = new Subject<ResultType>();
 
@@ -96,6 +105,8 @@ namespace InGame.Buttles
             //フィールドの生成
             LogCharacterStatus();
             turnManager.StartTurn();
+            allCharacters = agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().Select(x => x.agentCharacter)
+                                                            .Concat(enemyManager.enemies.Cast<BaseCharacter>());
 
             //戦闘を開始する
             StartBattle();
@@ -133,23 +144,27 @@ namespace InGame.Buttles
             //戦闘が終了するまでループする
             while (IsBattle)
             {
-                //ターン開始時の初期化
-                hadDoneActionCharacterList.Clear();
-
                 //キャラクターの状態出力
                 LogCharacterHPAndMP();
 
-                //エージェントに行動を決定させる
-                SelectPlayableCharactersAction();
+                //生きているすべてのキャラクターを素早さの順にソート
+                var sortedCharacters = allCharacters.Where(x => !x.characterHealth.IsDead).OrderByDescending(x => x.characterStatus.Agility);
+                Debug.Log(sortedCharacters.Select(x=>x.characterName).Enumerate());
 
-                //すべてのエージェントが行動を決定するまで待機
-                //await UniTask.Delay(TimeSpan.FromSeconds(0.2f), cancellationToken: token);
-                var agentList = agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().ToArray();
-                await UniTask.WaitUntil(() => agentList.All(x=>x.HadSelectedAction), cancellationToken:token);
-                //await WaitSelectAction(token);
+                //素早さが速い順に行動決定させ、実行する
+                foreach(var character in sortedCharacters)
+                {
+                    var actionData = await DecideAction(character, token);
 
-                //キャラクターの行動を実行する
-                ExecuteActions();
+                    if (actionData == null)
+                        continue;
+
+                    ExecuteCharacterAction(actionData);
+
+                    //戦闘が終了しているかを確認する
+                    CheckBattleResult();
+                }
+
                 if (!IsBattle)
                     break;
 
@@ -163,119 +178,57 @@ namespace InGame.Buttles
             }
         }
 
-        private async UniTask WaitSelectAction(CancellationToken token)
+        private async UniTask<ActionData> DecideAction(BaseCharacter character, CancellationToken token)
         {
-            var agentList = agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().ToArray();
+            //キャラクターが死んでいるなら行動しない
+            if (character.characterHealth.IsDead)
+                return null;
 
-            while (true)
+            //キャラクターがプレイヤーのキャラクターだったとき
+            if (character is PlayableCharacter)
             {
-                if (agentList.All(x => x.HadSelectedAction))
-                    return;
-                await UniTask.Yield(token);
-            }
-        }
+                IsWaitingPlayerDecision = true;
+                var agent = agentGroup.GetRegisteredAgents().Cast<PlayerAgent>().Single(x => x.agentCharacter == character);
 
-        //プレイヤーに行動を決定させる
-        private void SelectPlayableCharactersAction()
-        {
-            playableCharacterActionManager.ClearDic();
-            //各エージェントに行動を決定させる
-            foreach (var agent in agentGroup.GetRegisteredAgents())
+                agent.RequestDecision();
+
+                await UniTask.WaitUntil(() => !IsWaitingPlayerDecision, cancellationToken: token);
+
+                return selectedPlayerActionData;
+            }
+            //キャラクターが敵キャラだったとき
+            else if (character is EnemyCharacter)
             {
-                (agent as PlayerAgent).RequestDecision();
+                //敵AIに行動を決めさせる
+                var actionData = enemyManager.GetEnemyAI(character as EnemyCharacter).SelectAction();
+                return actionData;
             }
-        }
 
-        private void ExecuteActions()
-        {
-            //防御するキャラクター
-            IEnumerable<BaseCharacter> defenceActionCharacters = playableCharacterActionManager.GetDefenceActionPairs().OrderByDescending(x => x.characterStatus.Agility);
-            //優先度の高い行動をするキャラクター
-            IEnumerable<BaseCharacter> highPriorityActionCharacters= playableCharacterActionManager.GetHighPriorityActionCharacters().OrderByDescending(x => x.characterStatus.Agility);
-            //通常優先度の行動をするプレイヤーキャラクター
-            IEnumerable<BaseCharacter> normalPriorityActionPlayers = playableCharacterActionManager.GetNormalPriorityActionCharacters();
-            //通常優先度の行動をするキャラクター
-            IEnumerable<BaseCharacter> normalPriorityActionCharacters= enemyManager.enemies.Where(x => !x.characterHealth.IsDead)
-                                                .Cast<BaseCharacter>()
-                                                .Concat(normalPriorityActionPlayers)
-                                                .OrderByDescending(x => x.characterStatus.Agility);
-            //優先度の低い行動をするキャラクター
-            IEnumerable<BaseCharacter> lowPriorityActionCharacters= playableCharacterActionManager.GetLowPriorityActionCharacters().OrderByDescending(x => x.characterStatus.Agility);
-
-            //行動順にソートされたキャラクター
-            IEnumerable<BaseCharacter> sortedCharacters = defenceActionCharacters.Concat(highPriorityActionCharacters).Concat(normalPriorityActionCharacters).Concat(lowPriorityActionCharacters);
-            foreach(var character in sortedCharacters)
-            {
-                if (!IsBattle)
-                    return;
-                try
-                {
-                    ExecuteCharacterAction(character);
-                }
-                catch (InvalidOperationException)
-                {
-                    return;
-                }
-            }
+            return null;
         }
 
         /// <summary>
         /// キャラクターの行動を実行する
         /// </summary>
         /// <param name="character"></param>
-        private void ExecuteCharacterAction(BaseCharacter character)
+        private void ExecuteCharacterAction(ActionData actionData)
         {
-            //キャラクターが死んでいるなら行動しない
-            if (character.characterHealth.IsDead)
-                return;
+            var success= actionData.ExecuteAction();
 
-            //キャラクターがプレイヤーのキャラクターだったとき
-            if(character is PlayableCharacter)
+            //アクションが成功しなかったとき（ターゲットがすでに死んでいるなど）
+            if (!success)
             {
-                var actionData = playableCharacterActionManager.GetCharacterActionData(character as PlayableCharacter);
-                var success = actionData.ExecuteAction();
-                //アクションが成功しなかったとき（ターゲットがすでに死んでいるなど）
-                if (!success)
+                //生きている敵キャラからターゲットを選びなおす
+                BaseCharacter target = Retarget(actionData, enemyManager.enemies);
+                if (target == null)
                 {
-                    //生きている敵キャラからターゲットを選びなおす
-                    BaseCharacter target = Retarget(actionData, enemyManager.enemies);
-                    if (target == null)
-                    {
-                        actionData.ExecuteAction(character);
-                    }
-                    else
-                    {
-                        actionData.ExecuteAction(target);
-                    }
+                    actionData.ExecuteAction(actionData.actor);
+                }
+                else
+                {
+                    actionData.ExecuteAction(target);
                 }
             }
-            //キャラクターが敵キャラだったとき
-            else if(character is EnemyCharacter)
-            {
-                //敵AIに行動を決めさせる
-                var actionData = enemyManager.GetEnemyAI(character as EnemyCharacter).SelectAction();
-                var success = actionData.ExecuteAction();
-                //アクションが成功しなかったとき（ターゲットがすでに死んでいるなど）
-                if (!success)
-                {
-                    //生きているプレイヤーキャラクターからターゲットを選びなおす
-                    BaseCharacter target = Retarget(actionData, partyManager.partyCharacters);
-                    if (target == null)
-                    {
-                        actionData.ExecuteAction(character);
-                    }
-                    else
-                    {
-                        actionData.ExecuteAction(target);
-                    }
-                }
-            }
-
-            //行動終了しているキャラクターのリストに追加する
-            hadDoneActionCharacterList.Add(character);
-
-            //戦闘が終了しているかを確認する
-            CheckBattleResult();
         }
 
         /// <summary>
