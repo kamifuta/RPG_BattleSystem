@@ -227,6 +227,8 @@ namespace PCGs
             party.SetWinningParcentage((float)winCount / battleTimes);
             Debug.Log($"Ÿ—¦:{party.winningParcentage.ToString()}");
             party.SetIsSimulated(true);
+
+            partyCharacterArray.ForEach(x => x.Dispose());
             battleController.Dispose();
         }
 
@@ -238,7 +240,7 @@ namespace PCGs
             foreach(var status in characterManager.PlayableCharacterStatusList)
             {
                 log.Append($"(Character{i.ToString()}) HP:{status.MaxHP.ToString()} MP:{status.MaxMP.ToString()} " +
-                    $"UŒ‚—Í{status.AttackValue.ToString()} –‚—Í{status.MagicValue.ToString()} –hŒä—Í{status.DefecnceValue.ToString()} –‚–@–hŒä—Í{status.MagicDefecnceValue.ToString()} ‘f‘‚³{status.Agility.ToString()}\n");
+                    $"UŒ‚—Í{status.AttackValue.ToString()} –‚—Í{status.MagicValue.ToString()} –hŒä—Í{status.DefenceValue.ToString()} –‚–@–hŒä—Í{status.MagicDefenceValue.ToString()} ‘f‘‚³{status.Agility.ToString()}\n");
                 i++;
             }
             PCGLog.WriteLog(log.ToString());

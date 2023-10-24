@@ -23,7 +23,7 @@ namespace InGame.Buttles
         {
             var statusData = enemyStatusDataTable.GetStatusData(enemyType);
             var status = new CharacterStatus(statusData);
-            var enemy = new EnemyCharacter(status);
+            var enemy = new EnemyCharacter(status, statusData.UsableSkillList, statusData.UsableMagicList);
             return enemy;
         }
 

@@ -13,6 +13,16 @@ namespace InGame.Magics
             new MagicMissile(),
             new HealMagic(),
             new RevivalMagic(),
+            new BuffAttackMagic(),
+            new BuffMagicMagic(),
+            new BuffDefenceMagic(),
+            new BuffMagicDefenceMagic(),
+            new BuffAgilityMagic(),
+            new DebuffAttackMagic(),
+            new DebuffMagicMagic(),
+            new DebuffDefenceMagic(),
+            new DebuffMagicDefenceMagic(),
+            new DebuffAgilityMagic(),
         };
 
         public static ReadOnlyCollection<MagicData> MagicDatas => new ReadOnlyCollection<MagicData>(magicDataList);
@@ -20,8 +30,8 @@ namespace InGame.Magics
         public static IEnumerable<MagicData> GetUsableMagics(IEnumerable<MagicType> skillTypes, int currentMP)
             => magicDataList.Where(x => skillTypes.Any(y => x.magicType == y)).Where(x => x.consumeMP <= currentMP);
 
-        public static MagicData GetMagicData(MagicType skillType)
-            => magicDataList.Single(x => x.magicType == skillType);
+        public static MagicData GetMagicData(MagicType magicType)
+            => magicDataList.Single(x => x.magicType == magicType);
     }
 }
 

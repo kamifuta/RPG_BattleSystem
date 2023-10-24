@@ -17,15 +17,14 @@ namespace InGame.Magics
         public override int consumeMP => 20;
         public override TargetType targetType => TargetType.Friends;
         public override int priority => 0;
-        //public override bool IsTargetableDeadCharacter => false;
+        public override bool IsTargetableDeadCharacter => false;
 
         private const int lowestHealingValue = 30;
 
         public override void ExecuteMagic(BaseCharacter actor, BaseCharacter target)
         {
-            if (target.characterHealth.IsDead)
+            if(target.characterHealth.IsDead || target.HPRate == 1)
             {
-                //LogWriter.WriteLog("‚µ‚©‚µ‰½‚à‹N‚±‚ç‚È‚©‚Á‚½");
                 pointlessActionSubject.OnNext(Unit.Default);
                 return;
             }

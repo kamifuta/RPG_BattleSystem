@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace InGame.Characters
 {
-    public class CharacterHealth
+    public class CharacterHealth : IDisposable
     {
         public int currentHP { get; private set; }
 
@@ -12,8 +12,11 @@ namespace InGame.Characters
 
         private readonly int MaxHP;
 
-        private readonly ISubject<int> healValueSubject = new Subject<int>();
+        private readonly Subject<int> healValueSubject = new Subject<int>();
         public IObservable<int> HealValueObservable => healValueSubject;
+
+        private readonly Subject<int> damagedValueSubject = new Subject<int>();
+        public IObservable<int> DamagedValueObservable => damagedValueSubject;
 
         public CharacterHealth(int maxHP)
         {
@@ -25,6 +28,8 @@ namespace InGame.Characters
         {
             currentHP -= value;
             currentHP = Mathf.Clamp(currentHP, 0, MaxHP);
+
+            damagedValueSubject.OnNext(value);
         }
 
         public void Heal(int value)
@@ -33,6 +38,12 @@ namespace InGame.Characters
             currentHP = Mathf.Clamp(currentHP, 0, MaxHP);
 
             healValueSubject.OnNext(value);
+        }
+
+        public void Dispose()
+        {
+            healValueSubject.Dispose();
+            damagedValueSubject.Dispose();
         }
     }
 }

@@ -14,14 +14,14 @@ namespace InGame.Characters
         public class EnemyStatusData
         {
             [SerializeField] private EnemyType enemyType;
-            [SerializeField] private CharacterStatusData characterStatusData;
+            [SerializeField] private EnemyCharacterStatusData characterStatusData;
 
             public EnemyType EnemyType => enemyType;
-            public CharacterStatusData CharacterStatusData => characterStatusData;
+            public EnemyCharacterStatusData CharacterStatusData => characterStatusData;
         }
 
         [SerializeField] private List<EnemyStatusData> enemyStatusDatas;
-        public CharacterStatusData GetStatusData(EnemyType enemyType)
+        public EnemyCharacterStatusData GetStatusData(EnemyType enemyType)
             => enemyStatusDatas.Single(x => x.EnemyType == enemyType).CharacterStatusData;
     }
 }

@@ -1,29 +1,30 @@
 using InGame.Characters.PlayableCharacters;
 using InGame.Damages;
+using InGame.Magics;
+using InGame.Skills;
 using Log;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UniRx;
-using UnityEngine;
 
 namespace InGame.Characters.Enemies
 {
     public class EnemyCharacter : BaseCharacter
     {
-        private ISubject<(PlayableCharacter, int)> attackerSubject = new Subject<(PlayableCharacter, int)>();
-        public IObservable<(PlayableCharacter, int)> AttackerObservable => attackerSubject;
+        private readonly ISubject<PlayableCharacter> attackerSubject = new Subject<PlayableCharacter>();
+        public IObservable<PlayableCharacter> AttackerObservable => attackerSubject;
 
-        public EnemyCharacter(CharacterStatus characterStatus) : base(characterStatus)
+        public EnemyCharacter(CharacterStatus characterStatus, List<SkillType> rememberSkillList, List<MagicType> rememberMagicList) : base(characterStatus)
         {
-
+            rememberSkills = rememberSkillList;
+            rememberMagics = rememberMagicList;
         }
 
         public override void ApplyDamage(Damage damage)
         {
-            var damageValue = CalcDamage(damage);
+            var damageValue = DamageCalculator.CalcDamage(damage, this);
             characterHealth.ApplyDamage(damageValue);
-            attackerSubject.OnNext((damage.attacker as PlayableCharacter, damageValue));
+            attackerSubject.OnNext(damage.attacker as PlayableCharacter);
             //LogWriter.WriteLog($"{characterName}Ç…{damageValue.ToString()}ÇÃÉ_ÉÅÅ[ÉW");
 
             //if (characterHealth.IsDead)

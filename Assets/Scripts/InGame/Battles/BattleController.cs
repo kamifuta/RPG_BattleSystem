@@ -16,6 +16,7 @@ using InGame.Items;
 using System.Threading;
 using Unity.MLAgents;
 using InGame.Agents.Players;
+using InGame.Magics;
 
 namespace InGame.Buttles
 {
@@ -214,53 +215,7 @@ namespace InGame.Buttles
         /// <param name="character"></param>
         private void ExecuteCharacterAction(ActionData actionData)
         {
-            var success= actionData.ExecuteAction();
-
-            //アクションが成功しなかったとき（ターゲットがすでに死んでいるなど）
-            if (!success)
-            {
-                //生きている敵キャラからターゲットを選びなおす
-                BaseCharacter target = Retarget(actionData, enemyManager.enemies);
-                if (target == null)
-                {
-                    actionData.ExecuteAction(actionData.actor);
-                }
-                else
-                {
-                    actionData.ExecuteAction(target);
-                }
-            }
-        }
-
-        /// <summary>
-        /// ターゲットを変更する
-        /// </summary>
-        /// <param name="actionData"></param>
-        /// <param name="targetGroup"></param>
-        /// <returns>
-        /// 新しいターゲットを返す
-        /// 新しいターゲットが行動者と一致するならnullを返す
-        /// </returns>
-        private BaseCharacter Retarget(ActionData actionData, IEnumerable<BaseCharacter> targetGroup)
-        {
-            switch (actionData.actionType)
-            {
-                case BaseActionType.NormalAttack:
-                    return targetGroup.Where(x => !x.characterHealth.IsDead).RandomGet();
-                case BaseActionType.UseItem:
-                    var item = ItemDataBase.GetItemData(actionData.itemType);
-                    switch (item.targetType)
-                    {
-                        case TargetType.Friends:
-                            return null;
-                        case TargetType.Enemy:
-                            return targetGroup.Where(x => !x.characterHealth.IsDead).RandomGet();
-                    }
-                    break;
-                case BaseActionType.UseSkill:
-                    break;
-            }
-            return null;
+            actionData.ExecuteAction();
         }
 
         /// <summary>
@@ -291,7 +246,7 @@ namespace InGame.Buttles
             for (int i = 0; i < 4; i++)
             {
                 var character = partyManager.partyCharacters[i];
-                character.characterStatus.characterBuff.SetIsDefencing(false);
+                character.characterStatus.characterBuff.TryDeleteBuff();
             }
         }
 
@@ -340,7 +295,7 @@ namespace InGame.Buttles
             {
                 var character = partyManager.partyCharacters[i];
                 LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()} " +
-                    $"攻撃力{character.characterStatus.AttackValue.ToString()} 魔力{character.characterStatus.MagicValue.ToString()} 防御力{character.characterStatus.DefecnceValue.ToString()} 魔法防御力{character.characterStatus.MagicDefecnceValue.ToString()} 素早さ{character.characterStatus.Agility.ToString()}" +
+                    $"攻撃力{character.characterStatus.AttackValue.ToString()} 魔力{character.characterStatus.MagicValue.ToString()} 防御力{character.characterStatus.DefenceValue.ToString()} 魔法防御力{character.characterStatus.MagicDefenceValue.ToString()} 素早さ{character.characterStatus.Agility.ToString()}" +
                     $"スキル({character.rememberSkills.Enumerate()}) 魔法({character.rememberMagics.Enumerate()})", fileName);
             }
             LogWriter.WriteLog($"------------------------------------", fileName);
@@ -351,7 +306,7 @@ namespace InGame.Buttles
             {
                 var enemy = enemyManager.enemies[i];
                 LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()} " +
-                    $"攻撃力{enemy.characterStatus.AttackValue.ToString()} 魔力{enemy.characterStatus.MagicValue.ToString()} 防御力{enemy.characterStatus.DefecnceValue.ToString()} 魔法防御力{enemy.characterStatus.MagicDefecnceValue.ToString()} 素早さ{enemy.characterStatus.Agility.ToString()}", fileName);
+                    $"攻撃力{enemy.characterStatus.AttackValue.ToString()} 魔力{enemy.characterStatus.MagicValue.ToString()} 防御力{enemy.characterStatus.DefenceValue.ToString()} 魔法防御力{enemy.characterStatus.MagicDefenceValue.ToString()} 素早さ{enemy.characterStatus.Agility.ToString()}", fileName);
             }
             LogWriter.WriteLog($"------------------------------------", fileName);
         }

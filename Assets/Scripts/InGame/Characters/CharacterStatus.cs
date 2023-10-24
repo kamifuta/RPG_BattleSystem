@@ -12,6 +12,7 @@ namespace InGame.Characters
         Attack,
         Magic,
         Defence,
+        MagicDefence,
         Agility,
     }
 
@@ -29,11 +30,11 @@ namespace InGame.Characters
 
         public int MaxHP => baseMaxHP;
         public int MaxMP => baseMaxMP;
-        public int AttackValue => baseAttackValue;
-        public int MagicValue => baseMagicValue;
-        public int DefecnceValue => Mathf.CeilToInt(baseDefenceValue * (1 + Convert.ToInt32(characterBuff.IsDefencing) * 0.5f));
-        public int MagicDefecnceValue => Mathf.CeilToInt(baseMagicDefenceValue * (1 + Convert.ToInt32(characterBuff.IsDefencing) * 0.5f));
-        public int Agility => baseAgility;
+        public int AttackValue => Mathf.CeilToInt(baseAttackValue * (1 + characterBuff.AttackBuffLevel * 0.5f));
+        public int MagicValue => Mathf.CeilToInt(baseMagicValue * (1 + characterBuff.MagicBuffLevel * 0.5f));
+        public int DefenceValue => Mathf.CeilToInt(baseDefenceValue * (1 + characterBuff.DefenceBuffLevel * 0.5f));
+        public int MagicDefenceValue => Mathf.CeilToInt(baseMagicDefenceValue * (1 + characterBuff.MagicDefenceBuffLevel * 0.5f));
+        public int Agility => Mathf.CeilToInt(baseAgility * (1 + characterBuff.AgilityBuffLevel * 0.5f));
 
         public CharacterStatus(CharacterStatusData statusData)
         {

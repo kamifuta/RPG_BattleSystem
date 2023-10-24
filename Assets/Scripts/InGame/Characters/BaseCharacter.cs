@@ -6,18 +6,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using InGame.Magics;
+using System;
 
 namespace InGame.Characters
 {
-    public class BaseCharacter
+    public class BaseCharacter : IDisposable
     {
         public string characterName { get; private set; }
         public CharacterStatus characterStatus { get; }
 
         public readonly CharacterHealth characterHealth;
         public readonly CharacterMagic characterMagic;
-        public List<SkillType> rememberSkills { get; private set; } = new List<SkillType>();
-        public List<MagicType> rememberMagics { get; private set; } = new List<MagicType>();
+        public List<SkillType> rememberSkills { get; protected set; } = new List<SkillType>();
+        public List<MagicType> rememberMagics { get; protected set; } = new List<MagicType>();
 
         public float HPRate => (float)characterHealth.currentHP / characterStatus.MaxHP;
         public float MPRate => (float)characterMagic.currentMP / characterStatus.MaxMP;
@@ -47,34 +48,12 @@ namespace InGame.Characters
 
         public virtual void ApplyDamage(Damage damage)
         {
-            var damageValue = CalcDamage(damage);
+            var damageValue = DamageCalculator.CalcDamage(damage, this);
             characterHealth.ApplyDamage(damageValue);
             //LogWriter.WriteLog($"{characterName}に{damageValue.ToString()}のダメージ");
 
             //if(characterHealth.IsDead)
                 //LogWriter.WriteLog($"{characterName}は倒れた");
-        }
-
-        protected int CalcDamage(Damage damage)
-        {
-            int baseDamageValue = 0;
-            switch (damage.attackType)
-            {
-                case AttackType.Physics:
-                    baseDamageValue = (damage.attackValue / 2) - (characterStatus.DefecnceValue / 4);
-                    break;
-                case AttackType.Magic:
-                    baseDamageValue = (damage.attackValue / 2) - (characterStatus.MagicDefecnceValue / 4);
-                    break;
-            }
-
-            var damageValue = Mathf.CeilToInt(baseDamageValue + Random.Range(-0.16f, 0.16f) * baseDamageValue);
-            if (damageValue < 0)
-            {
-                damageValue = 1;
-            }
-
-            return damageValue;
         }
 
         public void Heal(Healing healing)
@@ -109,6 +88,11 @@ namespace InGame.Characters
             //デバッグ用
             characterHealth.Heal(10000);
             characterMagic.HealMP(10000);
+        }
+
+        public void Dispose()
+        {
+            characterHealth.Dispose();
         }
     }
 }

@@ -50,6 +50,16 @@ namespace InGame.Buttles.Actions
             skill.ExecuteSkill(actor, target);
         }
 
+        public static void UseSkill(BaseCharacter actor, IEnumerable<BaseCharacter> targets, SkillType skillType)
+        {
+            var skill = SkillDataBase.GetSkillData(skillType);
+            //Debug.Log($"<color=red>{skillType}‚ðŽg—p</color>");
+
+            //LogWriter.WriteLog($"{actor.characterName}‚Ì{skill.skillName}", "Test");
+
+            skill.ExecuteSkill(actor, targets);
+        }
+
         public static void UseMagic(BaseCharacter actor, BaseCharacter target, MagicType magicType)
         {
             var magic = MagicDataBase.GetMagicData(magicType);

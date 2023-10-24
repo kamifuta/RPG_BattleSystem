@@ -15,7 +15,7 @@ namespace InGame.Magics
         public override int consumeMP => 15;
         public override TargetType targetType => TargetType.Enemy;
         public override int priority => 0;
-        //public override bool IsTargetableDeadCharacter => false;
+        public override bool IsTargetableDeadCharacter => false;
 
         public override void ExecuteMagic(BaseCharacter actor, BaseCharacter target)
         {

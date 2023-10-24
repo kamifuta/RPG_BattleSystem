@@ -10,6 +10,7 @@ namespace InGame.Buttles.EnemyAIs
     public class EnemyAIMemory
     {
         private readonly Dictionary<PlayableCharacter, float> hateDic;
+        public IEnumerable<PlayableCharacter> HateCharacters => hateDic.Keys;
 
         public PlayableCharacter TargetPlayer()
         {

@@ -35,12 +35,13 @@ namespace InGame.Agents.Players
         private const int SkillAction = 2;
         private const int MagicAction = 3;
         private const int LivingEnemyAction = 4;
-        private const int PlayerAction = 5;
+        private const int LivingPlayerAction = 5;
+        private const int DeadPlayerAction = 6;
 
         private int addDamage = 0;
         private IDisposable disposable;
 
-        private Subject<ActionData> selectedActionDataSubject = new Subject<ActionData>();
+        private readonly Subject<ActionData> selectedActionDataSubject = new Subject<ActionData>();
         public IObservable<ActionData> SelectedActionDataObservable => selectedActionDataSubject;
 
         public void Init(PartyManager partyManager, EnemyManager enemyManager)
@@ -62,11 +63,11 @@ namespace InGame.Agents.Players
         {
             foreach(var enemy in enemyManager.enemies)
             {
-                disposable= enemy.AttackerObservable
-                    .Where(t=>t.Item1==agentCharacter)
-                    .Subscribe(t =>
+                disposable= enemy.AttackerObservable.Zip(enemy.characterHealth.DamagedValueObservable, (attacker, damageValue)=>(attacker, damageValue))
+                    .Where(t=>t.attacker==agentCharacter)
+                    .Subscribe(damage =>
                     {
-                        addDamage += t.Item2;
+                        addDamage += damage.damageValue;
                     })
                     .AddTo(this);
             }
@@ -81,6 +82,19 @@ namespace InGame.Agents.Players
         {
             sensor.AddObservation(partyManager.partyCharacters.Select(x => x.HPRate).ToList());
             sensor.AddObservation(partyManager.partyCharacters.Select(x => x.MPRate).ToList());
+
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.AttackValue).ToList());
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.MagicValue).ToList());
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.DefenceValue).ToList());
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.MagicDefenceValue).ToList());
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.Agility).ToList());
+
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.characterBuff.AttackBuffLevel).ToList());
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.characterBuff.MagicBuffLevel).ToList());
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.characterBuff.DefenceBuffLevel).ToList());
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.characterBuff.MagicDefenceBuffLevel).ToList());
+            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.characterBuff.AgilityBuffLevel).ToList());
+
             sensor.AddObservation(addDamage);
         }
 
@@ -121,7 +135,15 @@ namespace InGame.Agents.Players
             {
                 foreach (var magic in magicEnumValues)
                 {
-                    var enable = character.rememberMagics.Any(x => x == (MagicType)magic) && MagicDataBase.GetMagicData((MagicType)magic).consumeMP < character.characterMagic.currentMP;
+                    var magicData = MagicDataBase.GetMagicData((MagicType)magic);
+
+                    if (magicData.IsTargetableDeadCharacter && partyManager.partyCharacters.All(x=>x.characterHealth.IsDead))
+                    {
+                        actionMask.SetActionEnabled(MagicAction, (int)magic, false);
+                        continue;
+                    }
+
+                    var enable = character.rememberMagics.Any(x => x == (MagicType)magic) && magicData.consumeMP < character.characterMagic.currentMP;
                     actionMask.SetActionEnabled(MagicAction, (int)magic, enable);
                 }
             }
@@ -136,6 +158,15 @@ namespace InGame.Agents.Players
                 actionMask.SetActionEnabled(LivingEnemyAction, i, !enemy.characterHealth.IsDead);
             }
 
+            if (partyManager.partyCharacters.Any(x => x.characterHealth.IsDead))
+            {
+                for (int i = 0; i < partyManager.partyCharacters.Length; i++)
+                {
+                    var player = partyManager.partyCharacters[i];
+                    actionMask.SetActionEnabled(LivingPlayerAction, i, !player.characterHealth.IsDead);
+                    actionMask.SetActionEnabled(DeadPlayerAction, i, player.characterHealth.IsDead);
+                }
+            }
         }
 
         public override void OnActionReceived(ActionBuffers actionBuffers)
@@ -173,7 +204,7 @@ namespace InGame.Agents.Players
                             action = new ActionData(BaseActionType.UseItem, character, character, itemType);
                             break;
                         case TargetType.Friends:
-                            targetIndex = actionBuffers.DiscreteActions[PlayerAction];
+                            targetIndex = actionBuffers.DiscreteActions[LivingPlayerAction];
                             target = partyManager.partyCharacters[targetIndex];
                             action = new ActionData(BaseActionType.UseItem, character, target, itemType);
                             break;
@@ -197,7 +228,7 @@ namespace InGame.Agents.Players
                             action = new ActionData(BaseActionType.UseSkill, character, character, skillType);
                             break;
                         case TargetType.Friends:
-                            targetIndex = actionBuffers.DiscreteActions[PlayerAction];
+                            targetIndex = actionBuffers.DiscreteActions[LivingPlayerAction];
                             target = partyManager.partyCharacters[targetIndex];
                             action = new ActionData(BaseActionType.UseSkill, character, target, skillType);
                             break;
@@ -209,6 +240,7 @@ namespace InGame.Agents.Players
                         case TargetType.AllFriends:
                             break;
                         case TargetType.AllEnemy:
+                            action = new ActionData(BaseActionType.UseSkill, character, enemyManager.enemies, skillType);
                             break;
                     }
                     break;
@@ -221,7 +253,7 @@ namespace InGame.Agents.Players
                             action = new ActionData(BaseActionType.UseMagic, character, character, magicType);
                             break;
                         case TargetType.Friends:
-                            targetIndex = actionBuffers.DiscreteActions[PlayerAction];
+                            targetIndex = magicData.IsTargetableDeadCharacter ? actionBuffers.DiscreteActions[DeadPlayerAction] : actionBuffers.DiscreteActions[LivingPlayerAction];
                             target = partyManager.partyCharacters[targetIndex];
                             action = new ActionData(BaseActionType.UseMagic, character, target, magicType);
                             break;

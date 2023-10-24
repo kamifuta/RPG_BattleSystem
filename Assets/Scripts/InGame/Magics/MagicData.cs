@@ -17,7 +17,7 @@ namespace InGame.Magics
         public abstract int consumeMP { get; }
         public abstract TargetType targetType { get; }
         public abstract int priority { get; }
-        //public abstract bool IsTargetableDeadCharacter { get; }
+        public abstract bool IsTargetableDeadCharacter { get; }
 
         protected ISubject<Unit> pointlessActionSubject = new Subject<Unit>();
         public IObservable<Unit> PointlessActionObservable => pointlessActionSubject;

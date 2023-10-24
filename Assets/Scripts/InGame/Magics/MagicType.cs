@@ -8,6 +8,16 @@ namespace InGame.Magics
     {
         MagicMissile,
         HealMagic,
-        RevivalMagic
+        RevivalMagic,
+        BuffAttack,
+        BuffMagic,
+        BuffDefence,
+        BuffMagicDefence,
+        BuffAgility,
+        DebuffAttack,
+        DebuffMagic,
+        DebuffDefence,
+        DebuffMagicDefence,
+        DebuffAgility,
     }
 }

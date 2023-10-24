@@ -17,7 +17,7 @@ namespace InGame.Magics
         public override int consumeMP => 50;
         public override TargetType targetType => TargetType.Friends;
         public override int priority => 0;
-        //public override bool IsTargetableDeadCharacter => true;
+        public override bool IsTargetableDeadCharacter => true;
 
         private const float SuccessRate = 0.5f;
 

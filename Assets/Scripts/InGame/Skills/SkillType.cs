@@ -12,9 +12,10 @@ namespace InGame.Skills
     public enum SkillType
     {
         PowerAttack,
-        QuickAttack,
+        //uickAttack,
         //LastAttack,
         //BigDefence,
+        MowDownAttack,
     }
 
     public enum EnemySkillType

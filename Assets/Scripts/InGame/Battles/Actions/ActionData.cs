@@ -15,6 +15,7 @@ namespace InGame.Buttles.Actions
 
         public readonly BaseCharacter actor;
         public readonly BaseCharacter target;
+        public readonly IEnumerable<BaseCharacter> targets;
         public readonly ItemType itemType;
         public readonly SkillType skillType;
         public readonly MagicType magicType;
@@ -50,6 +51,14 @@ namespace InGame.Buttles.Actions
             this.skillType = skillType;
         }
 
+        public ActionData(BaseActionType actionType, BaseCharacter actor, IEnumerable<BaseCharacter> targets, SkillType skillType)
+        {
+            this.actionType = actionType;
+            this.actor = actor;
+            this.targets = targets;
+            this.skillType = skillType;
+        }
+
         public ActionData(BaseActionType actionType, BaseCharacter actor, BaseCharacter target, MagicType magicType)
         {
             this.actionType = actionType;
@@ -58,33 +67,38 @@ namespace InGame.Buttles.Actions
             this.magicType = magicType;
         }
 
-        public bool ExecuteAction()
+        public void ExecuteAction()
         {
             switch (actionType)
             {
                 case BaseActionType.NormalAttack:
-                    if (target.characterHealth.IsDead)
-                        return false;
                     BaseActionFunctions.NormalAttack(actor, target);
                     break;
                 case BaseActionType.Defence:
                     BaseActionFunctions.Defence(actor);
                     break;
                 case BaseActionType.UseItem:
-                    var item = ItemDataBase.GetItemData(itemType);
                     BaseActionFunctions.UseItem(actor, target, itemType);
                     break;
                 case BaseActionType.UseSkill:
                     var skill = SkillDataBase.GetSkillData(skillType);
-                    BaseActionFunctions.UseSkill(actor, target, skillType);
+                    switch (skill.targetType)
+                    {
+                        case TargetType.Self:
+                        case TargetType.Friends:
+                        case TargetType.Enemy:
+                            BaseActionFunctions.UseSkill(actor, target, skillType);
+                            break;
+                        case TargetType.AllEnemy:
+                        case TargetType.AllFriends:
+                            BaseActionFunctions.UseSkill(actor, targets, skillType);
+                            break;
+                    }
                     break;
                 case BaseActionType.UseMagic:
-                    var magic = MagicDataBase.GetMagicData(magicType);
                     BaseActionFunctions.UseMagic(actor, target, magicType);
                     break;
             }
-
-            return true;
         }
 
         public void ExecuteAction(BaseCharacter target)

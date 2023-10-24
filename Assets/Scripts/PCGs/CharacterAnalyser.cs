@@ -53,8 +53,8 @@ namespace PCGs
             float squaredMPDifference = Mathf.Pow(status.MaxMP, 2);
             float squaredAttackDifference = Mathf.Pow(status.AttackValue, 2);
             float squaredMagicDifference = Mathf.Pow(status.MagicValue, 2);
-            float squaredDefenceDifference = Mathf.Pow(status.DefecnceValue, 2);
-            float squaredMagicDefenceDifference = Mathf.Pow(status.MagicDefecnceValue, 2);
+            float squaredDefenceDifference = Mathf.Pow(status.DefenceValue, 2);
+            float squaredMagicDefenceDifference = Mathf.Pow(status.MagicDefenceValue, 2);
             float squaredAgilityDifference = Mathf.Pow(status.Agility, 2);
 
             var vectorSize = Mathf.Pow(squaredHPDifference + squaredMPDifference + squaredAttackDifference + squaredMagicDifference + squaredDefenceDifference + squaredMagicDefenceDifference + squaredAgilityDifference, 1f / 2f);
@@ -67,8 +67,8 @@ namespace PCGs
             float mp = status1.MaxMP * status2.MaxMP;
             float attack = status1.AttackValue * status2.AttackValue;
             float magic = status1.MagicValue * status2.MagicValue;
-            float defence = status1.DefecnceValue * status2.DefecnceValue;
-            float magicDefence = status1.MagicDefecnceValue * status2.MagicDefecnceValue;
+            float defence = status1.DefenceValue * status2.DefenceValue;
+            float magicDefence = status1.MagicDefenceValue * status2.MagicDefenceValue;
             float agility = status1.Agility * status2.Agility;
 
             var innerProduct = hp + mp + attack + magic + defence + magicDefence + agility;
