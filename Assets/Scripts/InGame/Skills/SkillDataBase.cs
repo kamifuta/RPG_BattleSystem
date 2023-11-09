@@ -11,6 +11,9 @@ namespace InGame.Skills
         {
             new PowerAttack(),
             new MowDownAttack(),
+            new AttackDownAttack(),
+            new DefenceDownAttack(),
+            new AgilityDownAttack(),
         };
 
         public static IEnumerable<SkillData> GetUsableSkills(IEnumerable<SkillType> skillTypes, int currentMP)

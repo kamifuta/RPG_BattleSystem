@@ -321,8 +321,9 @@ namespace InGame.Buttles
             for (int i = 0; i < 4; i++)
             {
                 var character = partyManager.partyCharacters[i];
+                var buff = character.characterStatus.characterBuff;
                 LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()}" +
-                    $"所持アイテム({character.HaveItemList.Enumerate()})", fileName);
+                    $"所持アイテム({character.HaveItemList.Enumerate()}) バフレベル({buff.AttackBuffLevel},{buff.MagicBuffLevel},{buff.DefenceBuffLevel},{buff.MagicDefenceBuffLevel},{buff.AgilityBuffLevel})", fileName);
             }
             LogWriter.WriteLog($"------------------------------------", fileName);
 
@@ -331,7 +332,9 @@ namespace InGame.Buttles
             for (int i = 0; i < count; i++)
             {
                 var enemy = enemyManager.enemies[i];
-                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()}", fileName);
+                var buff = enemy.characterStatus.characterBuff;
+                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()}" +
+                    $"バフレベル({buff.AttackBuffLevel},{buff.MagicBuffLevel},{buff.DefenceBuffLevel},{buff.MagicDefenceBuffLevel},{buff.AgilityBuffLevel})", fileName);
             }
             LogWriter.WriteLog($"------------------------------------", fileName);
         }
