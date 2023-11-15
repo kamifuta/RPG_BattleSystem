@@ -12,7 +12,7 @@ using VContainer.Unity;
 
 namespace InGame.Containers
 {
-    public class GameLifetimeScope : LifetimeScope
+    public class AnalyzeLifetimeScope : LifetimeScope
     {
         [SerializeField] private PlayerAgentFactory playerAgentFactory;
 
@@ -22,7 +22,7 @@ namespace InGame.Containers
 
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.RegisterEntryPoint<ParameterSearcher>().WithParameter("characterStatusData", PCGStatusData);
+            builder.RegisterEntryPoint<CharacterAnalyser>().WithParameter("characterStatusData", PCGStatusData);
 
             builder.Register<FieldManager>(Lifetime.Singleton);
             builder.Register<CharacterManager>(Lifetime.Scoped).WithParameter("characterStatusData", PCGStatusData);

@@ -19,26 +19,22 @@ namespace PCGs
 {
     public class CharacterAnalyser : IStartable, IDisposable
     {
-        private List<CharacterStatus> statusList = new List<CharacterStatus>(16);
+        private readonly List<CharacterStatus> statusList = new List<CharacterStatus>(16);
         private readonly CharacterManager characterManager;
         private readonly EnemyFactory enemyFactory;
         private readonly PlayerAgentFactory playerAgentFactory;
 
-        private EvaluationFunctions evaluationFunctions;
-        private List<Party> partyList = new List<Party>(128);
-        private CancellationTokenSource tokenSource = new CancellationTokenSource();
-        private CompositeDisposable disposables = new CompositeDisposable(64);
+        private readonly EvaluationFunctions evaluationFunctions;
+        private readonly List<Party> partyList = new List<Party>(128);
+        private readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
+        private readonly CompositeDisposable disposables = new CompositeDisposable(64);
 
         private readonly int battleTimes = 200;
         private int characterCount = 8;
 
         private int battleID = 0;
-        private int searchCount = 0;
 
         private bool IsDisposed = false;
-
-        private List<float> evaluatedValueList = new List<float>(1024);
-        private CharacterStatusData characterStatusData;
 
         [Inject]
         public CharacterAnalyser(CharacterManager characterManager, EnemyFactory enemyFactory, PlayerAgentFactory playerAgentFactory, CharacterStatusData characterStatusData)
@@ -46,7 +42,6 @@ namespace PCGs
             this.characterManager = characterManager;
             this.enemyFactory = enemyFactory;
             this.playerAgentFactory = playerAgentFactory;
-            this.characterStatusData = characterStatusData;
 
             evaluationFunctions = new EvaluationFunctions(characterStatusData);
         }
