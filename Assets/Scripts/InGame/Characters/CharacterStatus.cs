@@ -31,10 +31,10 @@ namespace InGame.Characters
         public int MaxHP => baseMaxHP;
         public int MaxMP => baseMaxMP;
         public int AttackValue => Mathf.Sign(characterBuff.AttackBuffLevel) >= 0 ? Mathf.CeilToInt(baseAttackValue * ((2 + characterBuff.AttackBuffLevel) / 2)) : Mathf.CeilToInt(baseAttackValue * (2 / (2 - characterBuff.AttackBuffLevel)));
-        public int MagicValue => Mathf.Sign(characterBuff.MagicBuffLevel) >= 0 ? Mathf.CeilToInt(baseMagicValue * ((1 + characterBuff.MagicBuffLevel) / 2)) : Mathf.CeilToInt(baseMagicValue * (2 / (1 - characterBuff.MagicBuffLevel)));
-        public int DefenceValue => Mathf.Sign(characterBuff.DefenceBuffLevel) >= 0 ? Mathf.CeilToInt(baseDefenceValue * ((1 + characterBuff.DefenceBuffLevel) / 2)) : Mathf.CeilToInt(baseDefenceValue * (2 / (1 - characterBuff.DefenceBuffLevel)));
-        public int MagicDefenceValue => Mathf.Sign(characterBuff.MagicDefenceBuffLevel) >= 0 ? Mathf.CeilToInt(baseMagicDefenceValue * ((1 + characterBuff.MagicDefenceBuffLevel) / 2)) : Mathf.CeilToInt(baseMagicDefenceValue * (2 / (1 - characterBuff.MagicDefenceBuffLevel)));
-        public int Agility => Mathf.Sign(characterBuff.AgilityBuffLevel) >= 0 ? Mathf.CeilToInt(baseAgility * ((1 + characterBuff.AgilityBuffLevel) / 2)) : Mathf.CeilToInt(baseAgility * (2 / (1 - characterBuff.AgilityBuffLevel)));
+        public int MagicValue => Mathf.Sign(characterBuff.MagicBuffLevel) >= 0 ? Mathf.CeilToInt(baseMagicValue * ((2 + characterBuff.MagicBuffLevel) / 2)) : Mathf.CeilToInt(baseMagicValue * (2 / (2 - characterBuff.MagicBuffLevel)));
+        public int DefenceValue => Mathf.Sign(characterBuff.DefenceBuffLevel) >= 0 ? Mathf.CeilToInt(baseDefenceValue * ((2 + characterBuff.DefenceBuffLevel) / 2)) : Mathf.CeilToInt(baseDefenceValue * (2 / (2 - characterBuff.DefenceBuffLevel)));
+        public int MagicDefenceValue => Mathf.Sign(characterBuff.MagicDefenceBuffLevel) >= 0 ? Mathf.CeilToInt(baseMagicDefenceValue * ((2 + characterBuff.MagicDefenceBuffLevel) / 2)) : Mathf.CeilToInt(baseMagicDefenceValue * (2 / (2 - characterBuff.MagicDefenceBuffLevel)));
+        public int Agility => Mathf.Sign(characterBuff.AgilityBuffLevel) >= 0 ? Mathf.CeilToInt(baseAgility * ((2 + characterBuff.AgilityBuffLevel) / 2)) : Mathf.CeilToInt(baseAgility * (2 / (2 - characterBuff.AgilityBuffLevel)));
 
         public CharacterStatus(CharacterStatusData statusData)
         {

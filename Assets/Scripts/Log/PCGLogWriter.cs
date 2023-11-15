@@ -24,6 +24,50 @@ namespace Log
             }
         }
 
+        public static void WriteEvaluationCSV(float value)
+        {
+            var fileName = $"{FolderPath}/Evaluation.csv";
+
+            using (StreamWriter writer = new StreamWriter(fileName, true, encoding))
+            {
+                writer.WriteLine($"{value.ToString()},");
+                writer.Close();
+            }
+        }
+
+        public static void WriteAnalyzeCSV(float winningRate, float distanceAverage, float synergy)
+        {
+            var fileName = $"{FolderPath}/Analyze.csv";
+
+            using (StreamWriter writer = new StreamWriter(fileName, true, encoding))
+            {
+                writer.WriteLine($"{winningRate.ToString()},{distanceAverage.ToString()},{synergy.ToString()}");
+                writer.Close();
+            }
+        }
+
+        public static void WriteActionCSV(string characterName, string ActionName)
+        {
+            var fileName = $"{FolderPath}/Action.csv";
+
+            using (StreamWriter writer = new StreamWriter(fileName, true, encoding))
+            {
+                writer.WriteLine($"{characterName.ToString()},{ActionName.ToString()}");
+                writer.Close();
+            }
+        }
+
+        public static void WriteCosineSimilarity(int index1, int index2, float cosineSimilarity)
+        {
+            var fileName = $"{FolderPath}/Action.csv";
+
+            using (StreamWriter writer = new StreamWriter(fileName, true, encoding))
+            {
+                writer.WriteLine($"{index1.ToString()}:{index2.ToString()} {cosineSimilarity}\n");
+                writer.Close();
+            }
+        }
+
         public static bool CheckExistJsonFile()
         {
             var fileName = $"{FolderPath}/StatusLog";

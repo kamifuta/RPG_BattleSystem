@@ -15,59 +15,59 @@ namespace InGame.Buttles.Actions
     {
         public static void NormalAttack(BaseCharacter actor, BaseCharacter target)
         {
-            //LogWriter.WriteLog($"{actor.characterName}の攻撃", "Test");
-            //Debug.Log("<color=red>攻撃</color>");
-
             target.ApplyDamage(new Damage(actor, actor.characterStatus.AttackValue, DamageTargetType.HP, AttackType.Physics, DamageAttributeType.None));
+#if Analyze
+            PCGLog.WriteActionCSV(actor.characterName, "通常攻撃");
+#endif
         }
 
         public static void Defence(BaseCharacter actor)
         {
-            //LogWriter.WriteLog($"{actor.characterName}は身を守っている", "Test");
-            //Debug.Log("<color=red>防御</color>");
-
             actor.characterStatus.characterBuff.SetIsDefencing(true);
+#if Analyze
+            PCGLog.WriteActionCSV(actor.characterName, "防御");
+#endif
         }
 
         public static void UseItem(BaseCharacter actor, BaseCharacter target, ItemType itemType)
         {
             var item = ItemDataBase.GetItemData(itemType);
-            //Debug.Log($"<color=red>{itemType}を使用</color>");
-
-            //LogWriter.WriteLog($"{actor.characterName}は{item.itemName}を使用した", "Test");
 
             item.ExecuteEffect(target);
             (actor as PlayableCharacter).RemoveItem(itemType);
+#if Analyze
+            PCGLog.WriteActionCSV(actor.characterName, "アイテム使用");
+#endif
         }
 
         public static void UseSkill(BaseCharacter actor, BaseCharacter target, SkillType skillType)
         {
             var skill = SkillDataBase.GetSkillData(skillType);
-            //Debug.Log($"<color=red>{skillType}を使用</color>");
-
-            //LogWriter.WriteLog($"{actor.characterName}の{skill.skillName}", "Test");
 
             skill.ExecuteSkill(actor, target);
+#if Analyze
+            PCGLog.WriteActionCSV(actor.characterName, skill.skillName);
+#endif
         }
 
         public static void UseSkill(BaseCharacter actor, IEnumerable<BaseCharacter> targets, SkillType skillType)
         {
             var skill = SkillDataBase.GetSkillData(skillType);
-            //Debug.Log($"<color=red>{skillType}を使用</color>");
-
-            //LogWriter.WriteLog($"{actor.characterName}の{skill.skillName}", "Test");
 
             skill.ExecuteSkill(actor, targets);
+#if Analyze
+            PCGLog.WriteActionCSV(actor.characterName, skill.skillName);
+#endif
         }
 
         public static void UseMagic(BaseCharacter actor, BaseCharacter target, MagicType magicType)
         {
             var magic = MagicDataBase.GetMagicData(magicType);
-            //Debug.Log($"<color=red>{magicType}を使用</color>");
-
-            //LogWriter.WriteLog($"{actor.characterName}の{magic.magicName}", "Test");
 
             magic.ExecuteMagic(actor, target);
+#if Analyze
+            PCGLog.WriteActionCSV(actor.characterName, magic.magicName);
+#endif
         }
     }
 }

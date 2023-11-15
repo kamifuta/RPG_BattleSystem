@@ -248,6 +248,11 @@ namespace InGame.Buttles
                 var character = partyManager.partyCharacters[i];
                 character.characterStatus.characterBuff.TryDeleteBuff();
             }
+
+            foreach(var enemy in enemyManager.enemies)
+            {
+                enemy.characterStatus.characterBuff.TryDeleteBuff();
+            }
         }
 
         /// <summary>

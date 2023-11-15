@@ -7,20 +7,20 @@ namespace InGame.Characters
     [CreateAssetMenu(menuName ="MyScriptable/CharacterStatusData", fileName ="CharacterStatusData")]
     public class CharacterStatusData : ScriptableObject
     {
-        [SerializeField] private int maxHP_min;
-        [SerializeField] private int maxHP_max;
-        [SerializeField] private int maxMP_min;
-        [SerializeField] private int maxMP_max;
-        [SerializeField] private int attackValue_min;
-        [SerializeField] private int attackValue_max;
-        [SerializeField] private int magicValue_min;
-        [SerializeField] private int magicValue_max;
-        [SerializeField] private int defenceValue_min;
-        [SerializeField] private int defenceValue_max;
-        [SerializeField] private int magicDefenceValue_min;
-        [SerializeField] private int magicDefenceValue_max;
-        [SerializeField] private int agility_min;
-        [SerializeField] private int agility_max;
+        [SerializeField] public int maxHP_min;
+        [SerializeField] public int maxHP_max;
+        [SerializeField] public int maxMP_min;
+        [SerializeField] public int maxMP_max;
+        [SerializeField] public int attackValue_min;
+        [SerializeField] public int attackValue_max;
+        [SerializeField] public int magicValue_min;
+        [SerializeField] public int magicValue_max;
+        [SerializeField] public int defenceValue_min;
+        [SerializeField] public int defenceValue_max;
+        [SerializeField] public int magicDefenceValue_min;
+        [SerializeField] public int magicDefenceValue_max;
+        [SerializeField] public int agility_min;
+        [SerializeField] public int agility_max;
 
         public int MaxHP => Random.Range(maxHP_min, maxHP_max + 1);
         public int MaxMP => Random.Range(maxMP_min, maxMP_max + 1);

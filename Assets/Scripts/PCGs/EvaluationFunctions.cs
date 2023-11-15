@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using InGame.Characters;
+using MyUtil;
 
 namespace PCGs
 {
@@ -17,12 +18,20 @@ namespace PCGs
         private const float gamma = 0.5f;
         private const float delta = 10;
 
-        //private CharacterManager characterManager;
+        private CharacterStatusData statusData;
+        private static CharacterStatusData StatusData;
+
+        public EvaluationFunctions(CharacterStatusData statusData)
+        {
+            this.statusData = statusData;
+
+            StatusData = statusData;
+        }
 
         public float EvaluateCharacter(float synergyPoint, float distance, float penaltyParty, float penaltyCharacter)
         {
             float synagy = 0f;
-            if(0<=synergyPoint && synergyPoint <= OptimalSynergyPoint)
+            if(0 <= synergyPoint && synergyPoint <= OptimalSynergyPoint)
             {
                 synagy = Mathf.Exp(-(Mathf.Pow((synergyPoint - OptimalSynergyPoint), 2) / (2 * Mathf.Pow(Sigma1, 2))));
             }
@@ -31,18 +40,16 @@ namespace PCGs
                 synagy = Mathf.Exp(-(Mathf.Pow((synergyPoint - OptimalSynergyPoint), 2) / (2 * Mathf.Pow(Sigma2, 2))));
             }
 
-            var evaluate = synagy + beta * distance + gamma * penaltyParty + delta * penaltyCharacter;
+            var evaluate = synagy + (beta * distance) - (gamma * penaltyParty) - (delta * penaltyCharacter);
             return evaluate;
         }
 
         public float EvaluateSynergy(IEnumerable<Party> parties)
         {
             float synergyPoint = 0f;
-            //Debug.Log(parties.Count());
 
             foreach (var party in parties)
             {
-                
                 synergyPoint += CalcSynergyPoint(party.winningParcentage);
             }
 
@@ -57,7 +64,7 @@ namespace PCGs
             }
             else if (0.45f < winningParcentage && winningParcentage <= 0.55f)
             {
-                return 10 * winningParcentage - 4.5f;
+                return (10 * winningParcentage) - 4.5f;
             }
             else if (0.55f < winningParcentage && winningParcentage <= 0.65f)
             {
@@ -65,7 +72,7 @@ namespace PCGs
             }
             else if (0.65f < winningParcentage && winningParcentage <= 0.75f)
             {
-                return -10 * winningParcentage + 7.5f;
+                return (-10 * winningParcentage) + 7.5f;
             }
 
             return 0f;
@@ -87,18 +94,35 @@ namespace PCGs
             return 1f / sumDistance;
         }
 
-        private float CalcParameterDistance(CharacterStatus status1, CharacterStatus status2)
+        public float CalcParameterDistance(CharacterStatus status1, CharacterStatus status2)
         {
-            float squaredHPDifference = Mathf.Pow(status1.baseMaxHP - status2.baseMaxHP, 2);
-            float squaredMPDifference = Mathf.Pow(status1.baseMaxMP - status2.baseMaxMP, 2);
-            float squaredAttackDifference = Mathf.Pow(status1.baseAttackValue - status2.baseAttackValue, 2);
-            float squaredMagicDifference = Mathf.Pow(status1.baseMagicValue - status2.baseMagicValue, 2);
-            float squaredDefenceDifference = Mathf.Pow(status1.baseDefenceValue - status2.baseDefenceValue, 2);
-            float squaredMagicDefenceDifference = Mathf.Pow(status1.baseMagicDefenceValue - status2.baseMagicDefenceValue, 2);
-            float squaredAgilityDifference = Mathf.Pow(status1.baseAgility - status2.baseAgility, 2);
+            var normalizedStatus1 = GetNormalizedStatus(status1);
+            var normalizedStatus2 = GetNormalizedStatus(status2);
+
+            float squaredHPDifference = Mathf.Pow(normalizedStatus1.HP - normalizedStatus2.HP, 2);
+            float squaredMPDifference = Mathf.Pow(normalizedStatus1.MP - normalizedStatus2.MP, 2);
+            float squaredAttackDifference = Mathf.Pow(normalizedStatus1.Attack - normalizedStatus2.Attack, 2);
+            float squaredMagicDifference = Mathf.Pow(normalizedStatus1.Magic - normalizedStatus2.Magic, 2);
+            float squaredDefenceDifference = Mathf.Pow(normalizedStatus1.Defence - normalizedStatus2.Defence, 2);
+            float squaredMagicDefenceDifference = Mathf.Pow(normalizedStatus1.MagicDefence - normalizedStatus2.MagicDefence, 2);
+            float squaredAgilityDifference = Mathf.Pow(normalizedStatus1.Agility - normalizedStatus2.Agility, 2);
 
             var distance = Mathf.Pow(squaredHPDifference + squaredMPDifference + squaredAttackDifference + squaredMagicDifference + squaredDefenceDifference + squaredMagicDefenceDifference + squaredAgilityDifference, 1f/2f);
             return distance;
+        }
+
+        private static NormalizedStatus GetNormalizedStatus(CharacterStatus characterStatus)
+        {
+            float hp = Calculator.CalcNormalizedValue(StatusData.maxHP_min, StatusData.maxHP_max, characterStatus.baseMaxHP);
+            float mp = Calculator.CalcNormalizedValue(StatusData.maxMP_min, StatusData.maxMP_max, characterStatus.baseMaxMP);
+            float attack = Calculator.CalcNormalizedValue(StatusData.attackValue_min, StatusData.attackValue_max, characterStatus.baseAttackValue);
+            float magic = Calculator.CalcNormalizedValue(StatusData.magicValue_min, StatusData.magicValue_max, characterStatus.baseMagicValue);
+            float defence = Calculator.CalcNormalizedValue(StatusData.defenceValue_min, StatusData.defenceValue_max, characterStatus.baseDefenceValue);
+            float magicDefence = Calculator.CalcNormalizedValue(StatusData.magicDefenceValue_min, StatusData.magicDefenceValue_max, characterStatus.baseMagicDefenceValue);
+            float agility = Calculator.CalcNormalizedValue(StatusData.agility_min, StatusData.agility_max, characterStatus.baseAgility);
+
+            var status = new NormalizedStatus(hp, mp, attack, magic, defence, magicDefence, agility);
+            return status;
         }
 
         public float PenaltyForStrongParty(IEnumerable<Party> parties)

@@ -13,16 +13,16 @@ MonoBehaviour:
   m_Name: PCGCharacter
   m_EditorClassIdentifier: 
   maxHP_min: 200
-  maxHP_max: 500
+  maxHP_max: 800
   maxMP_min: 100
-  maxMP_max: 400
+  maxMP_max: 600
   attackValue_min: 70
   attackValue_max: 400
   magicValue_min: 70
   magicValue_max: 400
   defenceValue_min: 50
   defenceValue_max: 400
-  magicDefenceValue_min: 100
-  magicDefenceValue_max: 350
+  magicDefenceValue_min: 50
+  magicDefenceValue_max: 400
   agility_min: 50
   agility_max: 200

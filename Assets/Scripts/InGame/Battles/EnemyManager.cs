@@ -39,20 +39,7 @@ namespace InGame.Buttles
                 enemyAIs[i] = enemyFactory.CreateEnemyAI(enemies[i], partyManager.partyCharacters);
 
                 enemies[i].SetCharacterName($"{Enum.GetName(typeof(EnemyType), encountedEnemyType)}_{(char)('A' + i)}");
-
-                //使えるスキルをセットする
-                foreach (var skill in Enum.GetValues(typeof(SkillType)))
-                {
-                    enemies[i].AddSkill((SkillType)skill);
-                }
-
-                //使える魔法をセットする
-                foreach (var magic in Enum.GetValues(typeof(MagicType)))
-                {
-                    enemies[i].AddMagic((MagicType)magic);
-                }
             }
-            //Debug.Log($"<color=red>generated enemy</color>{Thread.CurrentThread.ManagedThreadId}");
         }
 
         public EnemyAI GetEnemyAI(EnemyCharacter enemyCharacter)
