@@ -16,19 +16,17 @@ namespace InGame.Containers
     {
         [SerializeField] private PlayerAgentFactory playerAgentFactory;
 
-        [SerializeField] private EnemyStatusDataTable enemyStatusDataTable;
-
-        [SerializeField] private CharacterStatusData PCGStatusData;
+        [SerializeField] private PCGSettings PCGSettings;
 
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.RegisterEntryPoint<ParameterSearcher>().WithParameter("characterStatusData", PCGStatusData);
+            builder.RegisterEntryPoint<ParameterSearcher>().WithParameter("PCGSettings", PCGSettings);
 
             builder.Register<FieldManager>(Lifetime.Singleton);
-            builder.Register<CharacterManager>(Lifetime.Scoped).WithParameter("characterStatusData", PCGStatusData);
+            builder.Register<CharacterManager>(Lifetime.Scoped).WithParameter("characterStatusData", PCGSettings.StatusData);
 
             builder.Register<EnemyFactory>(Lifetime.Transient)
-                .WithParameter("enemyStatusDataTable", enemyStatusDataTable);
+                .WithParameter("enemyStatusDataTable", PCGSettings.EnemyStatusDataTable);
 
             builder.RegisterComponent(playerAgentFactory);
         }

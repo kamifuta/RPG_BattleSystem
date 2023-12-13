@@ -16,6 +16,8 @@ namespace InGame.Skills
         DefenceDownAttack,
         AttackDownAttack,
         AgilityDownAttack,
+        MagicDownAttack,
+        MagicDefenceDownAttack,
     }
 }
 

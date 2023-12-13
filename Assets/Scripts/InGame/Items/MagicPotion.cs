@@ -17,7 +17,7 @@ namespace InGame.Items
         public override TargetType targetType => TargetType.Friends;
         //public override bool IsTargetableDeadCharacter => false;
 
-        private const int healingValue = 60;
+        private const int healingValue = 90;
 
         public override void ExecuteEffect(BaseCharacter target)
         {

@@ -30,7 +30,7 @@ namespace PCGs
         private CancellationTokenSource tokenSource = new CancellationTokenSource();
         private CompositeDisposable disposables = new CompositeDisposable(64);
 
-        private readonly int searchTimes = 1000;
+        private readonly int searchTimes = 10000;
         private readonly int battleTimes = 10;
         private readonly int characterCount = 8;
 
@@ -42,14 +42,17 @@ namespace PCGs
         private List<float> evaluatedValueList = new List<float>(1024);
         private CharacterStatusData characterStatusData;
 
+        private PCGSettings PCGSettings;
+
         [Inject]
-        public ParameterSearcher(CharacterManager characterManager, EnemyFactory enemyFactory, PlayerAgentFactory playerAgentFactory, CharacterStatusData characterStatusData)
+        public ParameterSearcher(CharacterManager characterManager, EnemyFactory enemyFactory, PlayerAgentFactory playerAgentFactory, PCGSettings PCGSettings)
         {
             this.characterManager = characterManager;
             this.enemyFactory = enemyFactory;
             this.playerAgentFactory = playerAgentFactory;
-            this.characterStatusData = characterStatusData;
+            this.PCGSettings = PCGSettings;
 
+            characterStatusData = PCGSettings.StatusData;
             evaluationFunctions = new EvaluationFunctions(characterStatusData);
         }
 
@@ -71,17 +74,16 @@ namespace PCGs
             }
 
             characterManager.ClearStatusList();
-            var statusJSONs = PCGLog.ReadJSONLog().Split("\n");
 
-            for (int i = 0; i < characterCount; i++)
+            var statusJSONs = PCGLog.ReadStatusJSONLog();
+            LogStatus[] logStatusArray = JsonHelper.FromJson<LogStatus>(statusJSONs);
+            foreach (var logStatus in logStatusArray)
             {
-                var json = statusJSONs[i];
-                var logStatus = JsonUtility.FromJson<LogStatus>(json);
                 var status = new CharacterStatus(logStatus.MaxHP, logStatus.MaxMP, logStatus.AttackValue, logStatus.MagicValue, logStatus.DefenceValue, logStatus.MagicDefenceValue, logStatus.Agility);
                 characterManager.AddNewCharacterStatus(status);
             }
 
-            searchCount=Int32.Parse(statusJSONs[characterCount]);
+            searchCount = PCGLog.CountLogFile();
             Debug.Log("ステータスの読み込みが完了しました");
         }
 
@@ -116,24 +118,24 @@ namespace PCGs
                 var distance = evaluationFunctions.EvaluateParameterDistance(characterManager.PlayableCharacterStatusList, characterStatus);
                 var penaltyParty = evaluationFunctions.PenaltyForStrongParty(partyList);
                 var penaltyCharacter = evaluationFunctions.PenaltyForStrongCharacter(partyList);
-                var evaluation = evaluationFunctions.EvaluateCharacter(synergyPoint, distance, penaltyParty, penaltyCharacter);
+                var penaltyLongBattle = evaluationFunctions.PenaltyForLongBattle(partyList);
+                var evaluation = evaluationFunctions.EvaluateCharacter(synergyPoint, distance, penaltyParty, penaltyCharacter, penaltyLongBattle);
 
                 //パラメータを突然変異させる
-                var variantHP = Mathf.CeilToInt(characterStatus.baseMaxHP * Random.Range(0.9f, 1.1f));
-                variantHP = Math.Clamp(variantHP, characterStatusData.maxHP_min, characterStatusData.maxHP_max);
-                var variantMP = Mathf.CeilToInt(characterStatus.baseMaxMP * Random.Range(0.9f, 1.1f));
-                variantMP = Math.Clamp(variantMP, characterStatusData.maxMP_min, characterStatusData.maxMP_max);
-                var variantAttack = Mathf.CeilToInt(characterStatus.baseAttackValue * Random.Range(0.9f, 1.1f));
-                variantAttack = Math.Clamp(variantAttack, characterStatusData.attackValue_min, characterStatusData.attackValue_max);
-                var variantMagic = Mathf.CeilToInt(characterStatus.baseMagicValue * Random.Range(0.9f, 1.1f));
-                variantMagic = Math.Clamp(variantMagic, characterStatusData.magicValue_min, characterStatusData.magicValue_max);
-                var variantDefence = Mathf.CeilToInt(characterStatus.baseDefenceValue * Random.Range(0.9f, 1.1f));
-                variantDefence = Math.Clamp(variantDefence, characterStatusData.defenceValue_min, characterStatusData.defenceValue_max);
-                var variantMagicDefence = Mathf.CeilToInt(characterStatus.baseMagicDefenceValue * Random.Range(0.9f, 1.1f));
-                variantMagicDefence = Math.Clamp(variantMagicDefence, characterStatusData.magicDefenceValue_min, characterStatusData.magicDefenceValue_max);
-                var variantAgility = Mathf.CeilToInt(characterStatus.baseAgility * Random.Range(0.9f, 1.1f));
-                variantAgility = Math.Clamp(variantAgility, characterStatusData.agility_min, characterStatusData.agility_max);
-                var variantStatus = new CharacterStatus(variantHP, variantMP, variantAttack, variantMagic, variantDefence, variantMagicDefence, variantAgility);
+                CharacterStatus variantStatus;
+                var averageWinningPercentage = partyList.Select(x => x.winningParcentage).Average();
+                if (averageWinningPercentage < 0.4f)
+                {
+                    variantStatus = CreateVariantStatus(characterStatus, 0.95f, 1.2f);
+                }
+                else if (averageWinningPercentage > 0.7f)
+                {
+                    variantStatus = CreateVariantStatus(characterStatus, 0.8f, 1.05f);
+                }
+                else
+                {
+                    variantStatus = CreateVariantStatus(characterStatus, 0.9f, 1.1f);
+                }
 
                 //突然変異したキャラクターをリストに追加
                 characterManager.AddNewCharacterStatus(variantStatus);
@@ -158,7 +160,8 @@ namespace PCGs
                 var variantDistance = evaluationFunctions.EvaluateParameterDistance(characterManager.PlayableCharacterStatusList.Where(x=>x!=characterStatus), variantStatus);
                 var variantPenaltyParty = evaluationFunctions.PenaltyForStrongParty(partyList);
                 var variantPenaltyCharacter = evaluationFunctions.PenaltyForStrongCharacter(partyList);
-                var variantEvaluation = evaluationFunctions.EvaluateCharacter(variantSynergyPoint, variantDistance, variantPenaltyParty, variantPenaltyCharacter);
+                var variantPenaltyLongBattle = evaluationFunctions.PenaltyForLongBattle(partyList);
+                var variantEvaluation = evaluationFunctions.EvaluateCharacter(variantSynergyPoint, variantDistance, variantPenaltyParty, variantPenaltyCharacter, variantPenaltyLongBattle);
 
                 //評価値が高いほうを残す
                 if (variantEvaluation > evaluation)
@@ -196,6 +199,28 @@ namespace PCGs
             }
         }
 
+        public CharacterStatus CreateVariantStatus(CharacterStatus characterStatus, float minMagnification, float maxMagnification)
+        {
+            //パラメータを突然変異させる
+            var variantHP = Mathf.CeilToInt(characterStatus.baseMaxHP * Random.Range(minMagnification, maxMagnification));
+            variantHP = Math.Clamp(variantHP, characterStatusData.maxHP_min, characterStatusData.maxHP_max);
+            var variantMP = Mathf.CeilToInt(characterStatus.baseMaxMP * Random.Range(minMagnification, maxMagnification));
+            variantMP = Math.Clamp(variantMP, characterStatusData.maxMP_min, characterStatusData.maxMP_max);
+            var variantAttack = Mathf.CeilToInt(characterStatus.baseAttackValue * Random.Range(minMagnification, maxMagnification));
+            variantAttack = Math.Clamp(variantAttack, characterStatusData.attackValue_min, characterStatusData.attackValue_max);
+            var variantMagic = Mathf.CeilToInt(characterStatus.baseMagicValue * Random.Range(minMagnification, maxMagnification));
+            variantMagic = Math.Clamp(variantMagic, characterStatusData.magicValue_min, characterStatusData.magicValue_max);
+            var variantDefence = Mathf.CeilToInt(characterStatus.baseDefenceValue * Random.Range(minMagnification, maxMagnification));
+            variantDefence = Math.Clamp(variantDefence, characterStatusData.defenceValue_min, characterStatusData.defenceValue_max);
+            var variantMagicDefence = Mathf.CeilToInt(characterStatus.baseMagicDefenceValue * Random.Range(minMagnification, maxMagnification));
+            variantMagicDefence = Math.Clamp(variantMagicDefence, characterStatusData.magicDefenceValue_min, characterStatusData.magicDefenceValue_max);
+            var variantAgility = Mathf.CeilToInt(characterStatus.baseAgility * Random.Range(minMagnification, maxMagnification));
+            variantAgility = Math.Clamp(variantAgility, characterStatusData.agility_min, characterStatusData.agility_max);
+            var variantStatus = new CharacterStatus(variantHP, variantMP, variantAttack, variantMagic, variantDefence, variantMagicDefence, variantAgility);
+
+            return variantStatus;
+        }
+
         /// <summary>
         /// バトルを開始する
         /// </summary>
@@ -228,7 +253,21 @@ namespace PCGs
                     });
 
                 //バトル終了まで待機する
-                await battleController.ResultObservable.ToUniTask(cancellationToken:tokenSource.Token);
+                var result=await UniTask.WhenAny(
+                    UniTask.WaitUntil(()=>battleController.CurrentTurn>=PCGSettings.SimulateTurn, cancellationToken:tokenSource.Token),
+                    battleController.ResultObservable.ToUniTask(cancellationToken: tokenSource.Token)
+                    );
+
+                switch (result)
+                {
+                    case 0:
+                        Debug.Log("中断");
+                        battleController.SuspendBattle();
+                        party.SetHadSuspended(true);
+                        break;
+                    case 1:
+                        break;
+                }
 
                 //すべてのキャラクターに対して初期化する
                 characterManager.SetItems(partyCharacterArray);
@@ -259,22 +298,24 @@ namespace PCGs
                     $"攻撃力{status.baseAttackValue.ToString()} 魔力{status.baseMagicValue.ToString()} 防御力{status.baseDefenceValue.ToString()} 魔法防御力{status.baseMagicDefenceValue.ToString()} 素早さ{status.baseAgility.ToString()}\n");
                 i++;
             }
-            PCGLog.WriteLog(log.ToString());
+            PCGLog.WriteStatusLog(log.ToString());
         }
 
         private void LogStatusJSON()
         {
-            PCGLog.DeleteJSONLog();
+            PCGLog.DeleteStatusJSONLog();
+            var logStatusList = new List<LogStatus>();
 
             for(int i= 0; i < characterCount; i++)
             {
                 var status = characterManager.PlayableCharacterStatusList[i];
                 var logStatus = new LogStatus(status.baseMaxHP, status.baseMaxMP, status.baseAttackValue, status.baseMagicValue, status.baseDefenceValue, status.baseMagicDefenceValue, status.baseAgility);
-                var json=JsonUtility.ToJson(logStatus);
-                PCGLog.WriteJSONLog(json);
+                logStatusList.Add(logStatus);
             }
 
-            PCGLog.WriteJSONLog(searchCount.ToString());
+            var json = JsonHelper.ToJson(logStatusList);
+            PCGLog.WriteStatusJSONLog(json);
+
             Debug.Log("Jsonに保存されました");
         }
 

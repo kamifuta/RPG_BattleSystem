@@ -27,6 +27,8 @@ namespace InGame.Buttles
             None,
             Win,
             Lose,
+            SuspendedWin,
+            SuspendedLose,
         }
 
         private EnemyManager enemyManager;
@@ -52,6 +54,8 @@ namespace InGame.Buttles
 
         private Subject<ResultType> resultSubject;
         public IObservable<ResultType> ResultObservable => resultSubject;
+
+        public int CurrentTurn => turnManager.turnCount;
 
         public BattleController(PlayerAgentFactory playerAgentFactory, EnemyFactory enemyFactory, PlayableCharacter[] partyCharacters, int battleID)
         {
@@ -280,6 +284,14 @@ namespace InGame.Buttles
                     LogWriter.WriteLog($"\n負け", fileName);
                     agentGroup.SetGroupReward(-1f);
                     break;
+                case ResultType.SuspendedWin:
+                    Debug.Log("<color=red>勝利</color>");
+                    LogWriter.WriteLog($"\n勝利", fileName);
+                    break;
+                case ResultType.SuspendedLose:
+                    Debug.Log("<color=blue>敗北</color>");
+                    LogWriter.WriteLog($"\n負け", fileName);
+                    break;
             }
 
             enemyManager.Dispose();
@@ -290,30 +302,45 @@ namespace InGame.Buttles
             resultSubject.OnCompleted();
         }
 
+        public void SuspendBattle()
+        {
+            var playerHPRate = partyManager.partyCharacters.Select(x => x.HPRate).Average();
+            var enemyHPRate = enemyManager.enemies.Select(x => x.HPRate).Average();
+
+            if (playerHPRate >= enemyHPRate)
+            {
+                FinishBattle(ResultType.SuspendedWin);
+            }
+            else
+            {
+                FinishBattle(ResultType.SuspendedLose);
+            }
+        }
+
         /// <summary>
         /// 敵味方のステータスをすべて書き込む
         /// </summary>
         private void LogCharacterStatus()
         {
-            LogWriter.WriteLog($"味方のステータス--------------------", fileName);
-            for(int i = 0; i < 4; i++)
-            {
-                var character = partyManager.partyCharacters[i];
-                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()} " +
-                    $"攻撃力{character.characterStatus.AttackValue.ToString()} 魔力{character.characterStatus.MagicValue.ToString()} 防御力{character.characterStatus.DefenceValue.ToString()} 魔法防御力{character.characterStatus.MagicDefenceValue.ToString()} 素早さ{character.characterStatus.Agility.ToString()}" +
-                    $"スキル({character.rememberSkills.Enumerate()}) 魔法({character.rememberMagics.Enumerate()})", fileName);
-            }
-            LogWriter.WriteLog($"------------------------------------", fileName);
+            //LogWriter.WriteLog($"味方のステータス--------------------", fileName);
+            //for(int i = 0; i < 4; i++)
+            //{
+            //    var character = partyManager.partyCharacters[i];
+            //    LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()} " +
+            //        $"攻撃力{character.characterStatus.AttackValue.ToString()} 魔力{character.characterStatus.MagicValue.ToString()} 防御力{character.characterStatus.DefenceValue.ToString()} 魔法防御力{character.characterStatus.MagicDefenceValue.ToString()} 素早さ{character.characterStatus.Agility.ToString()}" +
+            //        $"スキル({character.rememberSkills.Enumerate()}) 魔法({character.rememberMagics.Enumerate()})", fileName);
+            //}
+            //LogWriter.WriteLog($"------------------------------------", fileName);
 
-            LogWriter.WriteLog($"敵のステータス--------------------", fileName);
-            var count = enemyManager.enemies.Length;
-            for(int i = 0; i < count; i++)
-            {
-                var enemy = enemyManager.enemies[i];
-                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()} " +
-                    $"攻撃力{enemy.characterStatus.AttackValue.ToString()} 魔力{enemy.characterStatus.MagicValue.ToString()} 防御力{enemy.characterStatus.DefenceValue.ToString()} 魔法防御力{enemy.characterStatus.MagicDefenceValue.ToString()} 素早さ{enemy.characterStatus.Agility.ToString()}", fileName);
-            }
-            LogWriter.WriteLog($"------------------------------------", fileName);
+            //LogWriter.WriteLog($"敵のステータス--------------------", fileName);
+            //var count = enemyManager.enemies.Length;
+            //for(int i = 0; i < count; i++)
+            //{
+            //    var enemy = enemyManager.enemies[i];
+            //    LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()} " +
+            //        $"攻撃力{enemy.characterStatus.AttackValue.ToString()} 魔力{enemy.characterStatus.MagicValue.ToString()} 防御力{enemy.characterStatus.DefenceValue.ToString()} 魔法防御力{enemy.characterStatus.MagicDefenceValue.ToString()} 素早さ{enemy.characterStatus.Agility.ToString()}", fileName);
+            //}
+            //LogWriter.WriteLog($"------------------------------------", fileName);
         }
 
         /// <summary>
@@ -322,26 +349,26 @@ namespace InGame.Buttles
         /// </summary>
         private void LogCharacterHPAndMP()
         {
-            LogWriter.WriteLog($"味方のステータス--------------------", fileName);
-            for (int i = 0; i < 4; i++)
-            {
-                var character = partyManager.partyCharacters[i];
-                var buff = character.characterStatus.characterBuff;
-                LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()}" +
-                    $"所持アイテム({character.HaveItemList.Enumerate()}) バフレベル({buff.AttackBuffLevel},{buff.MagicBuffLevel},{buff.DefenceBuffLevel},{buff.MagicDefenceBuffLevel},{buff.AgilityBuffLevel})", fileName);
-            }
-            LogWriter.WriteLog($"------------------------------------", fileName);
+            //LogWriter.WriteLog($"味方のステータス--------------------", fileName);
+            //for (int i = 0; i < 4; i++)
+            //{
+            //    var character = partyManager.partyCharacters[i];
+            //    var buff = character.characterStatus.characterBuff;
+            //    LogWriter.WriteLog($"({character.characterName}) HP:{character.characterHealth.currentHP.ToString()}/{character.characterStatus.MaxHP.ToString()} MP{character.characterMagic.currentMP.ToString()}/{character.characterStatus.MaxMP.ToString()}" +
+            //        $"所持アイテム({character.HaveItemList.Enumerate()}) バフレベル({buff.AttackBuffLevel},{buff.MagicBuffLevel},{buff.DefenceBuffLevel},{buff.MagicDefenceBuffLevel},{buff.AgilityBuffLevel})", fileName);
+            //}
+            //LogWriter.WriteLog($"------------------------------------", fileName);
 
-            LogWriter.WriteLog($"敵のステータス--------------------", fileName);
-            var count = enemyManager.enemies.Length;
-            for (int i = 0; i < count; i++)
-            {
-                var enemy = enemyManager.enemies[i];
-                var buff = enemy.characterStatus.characterBuff;
-                LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()}" +
-                    $"バフレベル({buff.AttackBuffLevel},{buff.MagicBuffLevel},{buff.DefenceBuffLevel},{buff.MagicDefenceBuffLevel},{buff.AgilityBuffLevel})", fileName);
-            }
-            LogWriter.WriteLog($"------------------------------------", fileName);
+            //LogWriter.WriteLog($"敵のステータス--------------------", fileName);
+            //var count = enemyManager.enemies.Length;
+            //for (int i = 0; i < count; i++)
+            //{
+            //    var enemy = enemyManager.enemies[i];
+            //    var buff = enemy.characterStatus.characterBuff;
+            //    LogWriter.WriteLog($"({enemy.characterName}) HP:{enemy.characterHealth.currentHP.ToString()}/{enemy.characterStatus.MaxHP.ToString()} MP{enemy.characterMagic.currentMP.ToString()}/{enemy.characterStatus.MaxMP.ToString()}" +
+            //        $"バフレベル({buff.AttackBuffLevel},{buff.MagicBuffLevel},{buff.DefenceBuffLevel},{buff.MagicDefenceBuffLevel},{buff.AgilityBuffLevel})", fileName);
+            //}
+            //LogWriter.WriteLog($"------------------------------------", fileName);
         }
 
         private void DestroyAgentObject()

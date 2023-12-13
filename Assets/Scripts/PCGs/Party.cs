@@ -10,6 +10,7 @@ namespace PCGs
         public PlayableCharacter[] partyCharacters { get; private set; }
         public float winningParcentage { get; private set; }
         public bool IsSimulated { get; private set; }
+        public bool HadSuspended { get; private set; }
 
         public Party(PlayableCharacter[] partyCharacters)
         {
@@ -24,6 +25,11 @@ namespace PCGs
         public void SetIsSimulated(bool value)
         {
             IsSimulated = value;
+        }
+
+        public void SetHadSuspended(bool value)
+        {
+            HadSuspended = value;
         }
     }
 }

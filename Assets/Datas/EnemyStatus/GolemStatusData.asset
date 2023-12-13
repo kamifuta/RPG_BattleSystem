@@ -16,14 +16,14 @@ MonoBehaviour:
   maxHP_max: 3000
   maxMP_min: 1500
   maxMP_max: 1500
-  attackValue_min: 350
-  attackValue_max: 350
-  magicValue_min: 300
-  magicValue_max: 300
-  defenceValue_min: 300
-  defenceValue_max: 300
-  magicDefenceValue_min: 250
-  magicDefenceValue_max: 250
+  attackValue_min: 450
+  attackValue_max: 450
+  magicValue_min: 450
+  magicValue_max: 450
+  defenceValue_min: 400
+  defenceValue_max: 400
+  magicDefenceValue_min: 400
+  magicDefenceValue_max: 400
   agility_min: 150
   agility_max: 150
   usableSkillList: 0000000001000000020000000300000004000000

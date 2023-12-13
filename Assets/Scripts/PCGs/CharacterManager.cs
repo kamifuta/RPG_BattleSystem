@@ -12,7 +12,7 @@ namespace PCGs
 {
     public class CharacterManager
     {
-        private readonly List<CharacterStatus> playableCharacterStatusList = new List<CharacterStatus>(12);
+        private List<CharacterStatus> playableCharacterStatusList = new List<CharacterStatus>(12);
         public IReadOnlyList<CharacterStatus> PlayableCharacterStatusList => playableCharacterStatusList;
 
         private readonly CharacterStatusData characterStatusData;
@@ -29,6 +29,8 @@ namespace PCGs
         /// <param name="amount"></param>
         public void GenerateCharacterStatuses(int amount)
         {
+            playableCharacterStatusList.Clear();
+
             for(int i = 0; i < amount; i++)
             {
                 //プレイヤーのパラメータを生成する
@@ -37,9 +39,9 @@ namespace PCGs
             }
         }
 
-        private async void AA()
+        public void SetStatusList(List<CharacterStatus> statusList)
         {
-
+            playableCharacterStatusList = statusList;
         }
 
         /// <summary>

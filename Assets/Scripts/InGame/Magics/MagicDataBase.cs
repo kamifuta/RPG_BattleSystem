@@ -11,6 +11,7 @@ namespace InGame.Magics
         private static readonly List<MagicData> magicDataList = new List<MagicData>()
         {
             new MagicMissile(),
+            new BigMagicMissile(),
             new HealMagic(),
             new RevivalMagic(),
             new BuffAttackMagic(),

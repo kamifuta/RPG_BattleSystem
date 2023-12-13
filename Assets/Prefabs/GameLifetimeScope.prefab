@@ -49,6 +49,4 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects: []
   playerAgentFactory: {fileID: 0}
-  enemyStatusDataTable: {fileID: 11400000, guid: 5c0b48eb6218141468320b12cb678b55, type: 2}
-  playerStatusDataTable: {fileID: 11400000, guid: 53c1619acb3bc524d8c6a41e65ac78e3, type: 2}
-  PCGStatusData: {fileID: 11400000, guid: f96ae7b5f034f6d468cf47bd2952ff78, type: 2}
+  PCGSettings: {fileID: 11400000, guid: 6c7cc95ee36e82f4689da65dfaa20a21, type: 2}

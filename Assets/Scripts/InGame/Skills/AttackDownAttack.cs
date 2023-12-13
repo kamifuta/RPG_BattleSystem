@@ -11,12 +11,13 @@ namespace InGame.Skills
         public override SkillType skillType => SkillType.AttackDownAttack;
         public override string skillName => "UŒ‚‰º‚°UŒ‚";
         public override string skillExplane => "UŒ‚‚µ‚½‘ÎÛ‚ÌUŒ‚—Í‚ðŠm—¦‚Å‰º‚°‚é";
-        public override int consumeMP => 10;
+        public override int consumeMP => 15;
         public override TargetType targetType => TargetType.Enemy;
         public override int priority => 0;
         //public override bool IsTargetableDeadCharacter => false;
 
-        private const float AttackMagnification = 1.1f;
+        private const float AttackMagnification = 1.05f;
+        private const float AddEffectRate = 0.1f;
 
         public override void ExecuteSkill(BaseCharacter actor, BaseCharacter target)
         {
@@ -24,7 +25,7 @@ namespace InGame.Skills
             var damage = new Damage(actor, attackValue, DamageTargetType.HP, AttackType.Physics, DamageAttributeType.None);
             target.ApplyDamage(damage);
 
-            if (Random.value < 0.3f)
+            if (Random.value < AddEffectRate)
             {
                 target.characterStatus.characterBuff.RaiseAttackBuffLevel(-1);
             }

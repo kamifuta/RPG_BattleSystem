@@ -7,6 +7,7 @@ namespace InGame.Magics
     public enum MagicType
     {
         MagicMissile,
+        BigMagicMissile,
         HealMagic,
         RevivalMagic,
         BuffAttack,

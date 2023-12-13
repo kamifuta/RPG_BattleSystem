@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PCGs
 {
-    public class NormalizedStatus : MonoBehaviour
+    public class NormalizedStatus
     {
         public NormalizedStatus(float HP, float MP, float Attack, float Magic, float Defence, float MagicDefence, float Agility)
         {

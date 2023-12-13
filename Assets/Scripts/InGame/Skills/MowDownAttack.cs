@@ -12,12 +12,12 @@ namespace InGame.Skills
         public override SkillType skillType => SkillType.MowDownAttack;
         public override string skillName => "“ã‚¬•¥‚¢UŒ‚";
         public override string skillExplane => "‘S‘Ì‚ÉUŒ‚‚ðs‚¤";
-        public override int consumeMP => 10;
+        public override int consumeMP => 20;
         public override TargetType targetType => TargetType.AllEnemy;
         public override int priority => 0;
         //public override bool IsTargetableDeadCharacter => false;
 
-        private const float AttackMagnification = 0.5f;
+        private const float AttackMagnification = 0.75f;
 
         public override void ExecuteSkill(BaseCharacter actor, IEnumerable<BaseCharacter> targets)
         {

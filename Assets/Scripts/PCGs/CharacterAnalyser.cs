@@ -60,19 +60,18 @@ namespace PCGs
                 return;
             }
 
-            var statusJSONs = PCGLog.ReadJSONLog().Split("\n");
-
-            for (int i = 0; i < statusJSONs.Length - 2; i++)
+            var statusJSONs = PCGLog.ReadStatusJSONLog();
+            LogStatus[] logStatusArray = JsonHelper.FromJson<LogStatus>(statusJSONs);
+            foreach(var logStatus in logStatusArray)
             {
-                var json = statusJSONs[i];
-                Debug.Log(json);
-                var logStatus = JsonUtility.FromJson<LogStatus>(json);
                 var status = new CharacterStatus(logStatus.MaxHP, logStatus.MaxMP, logStatus.AttackValue, logStatus.MagicValue, logStatus.DefenceValue, logStatus.MagicDefenceValue, logStatus.Agility);
                 statusList.Add(status);
             }
 
             characterCount = statusList.Count;
             Debug.Log("ステータスの読み込みが完了しました");
+
+            characterManager.SetStatusList(statusList);
         }
 
         private async UniTaskVoid StartAnalyze()
@@ -96,7 +95,7 @@ namespace PCGs
                 float allWinningRateAverage = partyList.Select(x => x.winningParcentage).Average();
                 float synergy = evaluationFunctions.EvaluateSynergy(partyList);
                 List<float> distanceList = new List<float>();
-                foreach(var status in statusList)
+                foreach (var status in statusList)
                 {
                     if (status == analyzedStatus)
                         continue;
@@ -199,28 +198,28 @@ namespace PCGs
             }
         }
 
-        private float CalcVectorSize(CharacterStatus status)
+        private float CalcVectorSize(NormalizedStatus status)
         {
-            float squaredHPDifference = Mathf.Pow(status.MaxHP, 2);
-            float squaredMPDifference = Mathf.Pow(status.MaxMP, 2);
-            float squaredAttackDifference = Mathf.Pow(status.AttackValue, 2);
-            float squaredMagicDifference = Mathf.Pow(status.MagicValue, 2);
-            float squaredDefenceDifference = Mathf.Pow(status.DefenceValue, 2);
-            float squaredMagicDefenceDifference = Mathf.Pow(status.MagicDefenceValue, 2);
+            float squaredHPDifference = Mathf.Pow(status.HP, 2);
+            float squaredMPDifference = Mathf.Pow(status.MP, 2);
+            float squaredAttackDifference = Mathf.Pow(status.Attack, 2);
+            float squaredMagicDifference = Mathf.Pow(status.Magic, 2);
+            float squaredDefenceDifference = Mathf.Pow(status.Defence, 2);
+            float squaredMagicDefenceDifference = Mathf.Pow(status.MagicDefence, 2);
             float squaredAgilityDifference = Mathf.Pow(status.Agility, 2);
 
             var vectorSize = Mathf.Pow(squaredHPDifference + squaredMPDifference + squaredAttackDifference + squaredMagicDifference + squaredDefenceDifference + squaredMagicDefenceDifference + squaredAgilityDifference, 1f / 2f);
             return vectorSize;
         }
 
-        private float CalcInnerProduct(CharacterStatus status1, CharacterStatus status2)
+        private float CalcInnerProduct(NormalizedStatus status1, NormalizedStatus status2)
         {
-            float hp = status1.MaxHP * status2.MaxHP;
-            float mp = status1.MaxMP * status2.MaxMP;
-            float attack = status1.AttackValue * status2.AttackValue;
-            float magic = status1.MagicValue * status2.MagicValue;
-            float defence = status1.DefenceValue * status2.DefenceValue;
-            float magicDefence = status1.MagicDefenceValue * status2.MagicDefenceValue;
+            float hp = status1.HP * status2.HP;
+            float mp = status1.MP * status2.MP;
+            float attack = status1.Attack * status2.Attack;
+            float magic = status1.Magic * status2.Magic;
+            float defence = status1.Defence * status2.Defence;
+            float magicDefence = status1.MagicDefence * status2.MagicDefence;
             float agility = status1.Agility * status2.Agility;
 
             var innerProduct = hp + mp + attack + magic + defence + magicDefence + agility;
@@ -229,7 +228,10 @@ namespace PCGs
 
         private float CalcCosineSimilarity(CharacterStatus status1, CharacterStatus status2)
         {
-            return CalcInnerProduct(status1, status2) / (CalcVectorSize(status1) * CalcVectorSize(status2));
+            NormalizedStatus normalizedStatus1 = EvaluationFunctions.GetNormalizedStatus(status1);
+            NormalizedStatus normalizedStatus2 = EvaluationFunctions.GetNormalizedStatus(status2);
+
+            return CalcInnerProduct(normalizedStatus1, normalizedStatus2) / (CalcVectorSize(normalizedStatus1) * CalcVectorSize(normalizedStatus2));
         }
     }
 }

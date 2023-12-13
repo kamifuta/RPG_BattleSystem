@@ -46,16 +46,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 49
+    VectorObservationSize: 54
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
-      BranchSizes: 0500000002000000050000000d000000010000000400000004000000
-    VectorActionSize: 0500000002000000050000000d000000010000000400000004000000
+      BranchSizes: 0500000002000000070000000e000000010000000400000004000000
+    VectorActionSize: 0500000002000000070000000e000000010000000400000004000000
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 5022602860645237092, guid: d1195c95694645f4eaaf6b61305b8e84, type: 3}
+  m_Model: {fileID: 5022602860645237092, guid: 189e2c9afd57a2745884c294781c79cf, type: 3}
   m_InferenceDevice: 0
   m_BehaviorType: 0
   m_BehaviorName: BattleSystem_poca

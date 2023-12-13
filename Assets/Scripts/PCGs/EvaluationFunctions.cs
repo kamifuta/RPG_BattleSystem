@@ -28,7 +28,7 @@ namespace PCGs
             StatusData = statusData;
         }
 
-        public float EvaluateCharacter(float synergyPoint, float distance, float penaltyParty, float penaltyCharacter)
+        public float EvaluateCharacter(float synergyPoint, float distance, float penaltyParty, float penaltyCharacter, float penaltyLongBattle)
         {
             float synagy = 0f;
             if(0 <= synergyPoint && synergyPoint <= OptimalSynergyPoint)
@@ -40,7 +40,7 @@ namespace PCGs
                 synagy = Mathf.Exp(-(Mathf.Pow((synergyPoint - OptimalSynergyPoint), 2) / (2 * Mathf.Pow(Sigma2, 2))));
             }
 
-            var evaluate = synagy + (beta * distance) - (gamma * penaltyParty) - (delta * penaltyCharacter);
+            var evaluate = synagy + (beta * distance) - (gamma * penaltyParty) - (delta * penaltyCharacter) - penaltyLongBattle;
             return evaluate;
         }
 
@@ -111,7 +111,7 @@ namespace PCGs
             return distance;
         }
 
-        private static NormalizedStatus GetNormalizedStatus(CharacterStatus characterStatus)
+        public static NormalizedStatus GetNormalizedStatus(CharacterStatus characterStatus)
         {
             float hp = Calculator.CalcNormalizedValue(StatusData.maxHP_min, StatusData.maxHP_max, characterStatus.baseMaxHP);
             float mp = Calculator.CalcNormalizedValue(StatusData.maxMP_min, StatusData.maxMP_max, characterStatus.baseMaxMP);
@@ -139,6 +139,11 @@ namespace PCGs
         {
             var characterWinnningParcentage = Sum(parties.Select(x => x.winningParcentage)) / parties.Count();
             return Mathf.Max(characterWinnningParcentage - 0.5f, 0f);
+        }
+
+        public float PenaltyForLongBattle(IEnumerable<Party> parties)
+        {
+            return parties.Count(x => x.HadSuspended) * 0.5f;
         }
 
         public float Sum(IEnumerable<float> list)

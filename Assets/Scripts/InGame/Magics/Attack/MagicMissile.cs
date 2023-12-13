@@ -12,14 +12,17 @@ namespace InGame.Magics
         public override MagicType magicType => MagicType.MagicMissile;
         public override string magicName => "マジックミサイル";
         public override string magicExplane => "魔法の弾で攻撃する";
-        public override int consumeMP => 15;
+        public override int consumeMP => 5;
         public override TargetType targetType => TargetType.Enemy;
         public override int priority => 0;
         public override bool IsTargetableDeadCharacter => false;
 
+        private const float MagicMagnification = 1.05f;
+
         public override void ExecuteMagic(BaseCharacter actor, BaseCharacter target)
         {
-            var damage = new Damage(actor, actor.characterStatus.MagicValue, DamageTargetType.HP, AttackType.Magic, DamageAttributeType.None);
+            var magicValue = Mathf.CeilToInt(actor.characterStatus.MagicValue * MagicMagnification);
+            var damage = new Damage(actor, magicValue, DamageTargetType.HP, AttackType.Magic, DamageAttributeType.None);
             target.ApplyDamage(damage);
             actor.characterMagic.DecreaseMP(consumeMP);
         }

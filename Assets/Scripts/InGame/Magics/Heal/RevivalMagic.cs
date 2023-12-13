@@ -14,7 +14,7 @@ namespace InGame.Magics
         public override MagicType magicType => MagicType.RevivalMagic;
         public override string magicName => "リバイバル";
         public override string magicExplane => "確率で蘇生させる";
-        public override int consumeMP => 50;
+        public override int consumeMP => 25;
         public override TargetType targetType => TargetType.Friends;
         public override int priority => 0;
         public override bool IsTargetableDeadCharacter => true;

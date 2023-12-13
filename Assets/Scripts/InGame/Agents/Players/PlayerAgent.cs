@@ -17,6 +17,7 @@ using Unity.MLAgents.Sensors;
 using UnityEngine;
 using VContainer;
 using UniRx;
+using Unity.MLAgents.Policies;
 
 namespace InGame.Agents.Players
 {
@@ -39,7 +40,7 @@ namespace InGame.Agents.Players
         private const int DeadPlayerAction = 6;
 
         private int addDamage = 0;
-        private IDisposable disposable;
+        private CompositeDisposable disposable = new CompositeDisposable();
 
         private readonly Subject<ActionData> selectedActionDataSubject = new Subject<ActionData>();
         public IObservable<ActionData> SelectedActionDataObservable => selectedActionDataSubject;
@@ -61,15 +62,18 @@ namespace InGame.Agents.Players
 
         private void ObserveAddDamageForEnemy()
         {
-            foreach(var enemy in enemyManager.enemies)
+            foreach(var enemyHealth in enemyManager.enemies.Select(x=>x.characterHealth))
             {
-                disposable= enemy.AttackerObservable.Zip(enemy.characterHealth.DamagedValueObservable, (attacker, damageValue)=>(attacker, damageValue))
-                    .Where(t=>t.attacker==agentCharacter)
-                    .Subscribe(damage =>
-                    {
-                        addDamage += damage.damageValue;
-                    })
+                var disposable1 = enemyHealth.DamagedValueObservable
+                    .Subscribe(x => addDamage += x)
                     .AddTo(this);
+
+                var disposable2 = enemyHealth.HealValueObservable
+                    .Subscribe(x => addDamage -= x)
+                    .AddTo(this);
+
+                disposable.Add(disposable1);
+                disposable.Add(disposable2);
             }
         }
 
@@ -80,20 +84,53 @@ namespace InGame.Agents.Players
 
         public override void CollectObservations(VectorSensor sensor)
         {
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => x.HPRate).ToList());
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => x.MPRate).ToList());
+            sensor.AddObservation(agentCharacter.HPRate);
+            sensor.AddObservation(agentCharacter.MPRate);
 
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.AttackValue).ToList());
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.MagicValue).ToList());
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.DefenceValue).ToList());
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.MagicDefenceValue).ToList());
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.Agility).ToList());
+            var partyCharacters = partyManager.partyCharacters.Where(x => x != agentCharacter).ToList();
 
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.characterBuff.AttackBuffLevel).ToList());
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.characterBuff.MagicBuffLevel).ToList());
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.characterBuff.DefenceBuffLevel).ToList());
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.characterBuff.MagicDefenceBuffLevel).ToList());
-            sensor.AddObservation(partyManager.partyCharacters.Select(x => (float)x.characterStatus.characterBuff.AgilityBuffLevel).ToList());
+            sensor.AddObservation(partyCharacters.Select(x => x.HPRate).ToList());
+            sensor.AddObservation(partyCharacters.Select(x => x.MPRate).ToList());
+
+            var characterStatus = agentCharacter.characterStatus;
+
+            sensor.AddObservation(characterStatus.AttackValue);
+            sensor.AddObservation(characterStatus.MagicValue);
+            sensor.AddObservation(characterStatus.DefenceValue);
+            sensor.AddObservation(characterStatus.MagicDefenceValue);
+            sensor.AddObservation(characterStatus.Agility);
+
+            var partyStatus = partyCharacters.Select(x => x.characterStatus).ToList();
+
+            sensor.AddObservation(partyStatus.Select(x=>(float)x.AttackValue).ToList());
+            sensor.AddObservation(partyStatus.Select(x=>(float)x.MagicValue).ToList());
+            sensor.AddObservation(partyStatus.Select(x=>(float)x.DefenceValue).ToList());
+            sensor.AddObservation(partyStatus.Select(x=>(float)x.MagicDefenceValue).ToList());
+            sensor.AddObservation(partyStatus.Select(x=>(float)x.Agility).ToList());
+
+            var characterBuff = characterStatus.characterBuff;
+
+            sensor.AddObservation(characterBuff.AttackBuffLevel);
+            sensor.AddObservation(characterBuff.MagicBuffLevel);
+            sensor.AddObservation(characterBuff.DefenceBuffLevel);
+            sensor.AddObservation(characterBuff.MagicDefenceBuffLevel);
+            sensor.AddObservation(characterBuff.AgilityBuffLevel);
+
+            var partyBuffs = partyStatus.Select(x => x.characterBuff).ToList();
+
+            sensor.AddObservation(partyBuffs.Select(x=>(float)x.AttackBuffLevel).ToList());
+            sensor.AddObservation(partyBuffs.Select(x=>(float)x.MagicBuffLevel).ToList());
+            sensor.AddObservation(partyBuffs.Select(x=>(float)x.DefenceBuffLevel).ToList());
+            sensor.AddObservation(partyBuffs.Select(x=>(float)x.MagicDefenceBuffLevel).ToList());
+            sensor.AddObservation(partyBuffs.Select(x=>(float)x.AgilityBuffLevel).ToList());
+
+            var enemyBuffs = enemyManager.enemies.Select(x => x.characterStatus.characterBuff).ToList();
+
+            sensor.AddObservation(enemyBuffs.Select(x => (float)x.AttackBuffLevel).ToList());
+            sensor.AddObservation(enemyBuffs.Select(x => (float)x.MagicBuffLevel).ToList());
+            sensor.AddObservation(enemyBuffs.Select(x => (float)x.DefenceBuffLevel).ToList());
+            sensor.AddObservation(enemyBuffs.Select(x => (float)x.MagicDefenceBuffLevel).ToList());
+            sensor.AddObservation(enemyBuffs.Select(x => (float)x.AgilityBuffLevel).ToList());
 
             sensor.AddObservation(addDamage);
         }

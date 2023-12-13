@@ -132,7 +132,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5884739994789811912, guid: 5d72cccf1f5c2934da36288f21c89da0, type: 3}
       propertyPath: m_Name
-      value: GameLifetimeScope
+      value: AnalyzeLifetimeScope
       objectReference: {fileID: 0}
     - target: {fileID: 5884739994789811914, guid: 5d72cccf1f5c2934da36288f21c89da0, type: 3}
       propertyPath: m_RootOrder

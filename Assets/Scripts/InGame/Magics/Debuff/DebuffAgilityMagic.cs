@@ -12,7 +12,7 @@ namespace InGame.Magics
         public override MagicType magicType => MagicType.DebuffAgility;
         public override string magicName => "‘f‘‚³‰º‚°";
         public override string magicExplane => "‘f‘‚³‚ğˆê’iŠKŒ¸­‚³‚¹‚é";
-        public override int consumeMP => 20;
+        public override int consumeMP => 10;
         public override TargetType targetType => TargetType.Enemy;
         public override int priority => 0;
         public override bool IsTargetableDeadCharacter => false;

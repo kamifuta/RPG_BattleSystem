@@ -80,7 +80,7 @@ namespace InGame.Characters
         public void Revaival()
         {
             //LogWriter.WriteLog($"{characterName}‚Í•œŠˆ‚µ‚½");
-            characterHealth.Heal(characterStatus.MaxHP / 3);
+            characterHealth.Heal(characterStatus.MaxHP / 2);
         }
 
         public void FullHeal()
